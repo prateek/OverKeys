@@ -47,6 +47,21 @@ jobs:
       - name: Build macOS app
         run: flutter build macos --release
 
+      - name: Assert release entitlements posture
+        # The release bundle must stay unsandboxed (the global CGEvent tap can't
+        # run sandboxed) and must NOT ship get-task-allow (which would let a
+        # debugger attach to a distributed keystroke monitor).
+        run: |
+          ENTS=$(codesign -d --entitlements :- \
+            build/macos/Build/Products/Release/overkeys.app 2>/dev/null | tr -d '\0')
+          echo "$ENTS"
+          if echo "$ENTS" | grep -q "get-task-allow"; then
+            echo "::error::Release bundle ships get-task-allow"; exit 1
+          fi
+          if ! echo "$ENTS" | grep -A1 "app-sandbox" | grep -q "<false/>"; then
+            echo "::error::Release bundle is sandboxed; the event tap needs it off"; exit 1
+          fi
+
       - name: Package .app into a zip
         run: |
           cd build/macos/Build/Products/Release
