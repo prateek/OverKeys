@@ -5,7 +5,7 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$StagingPath,
-    
+
     [Parameter(Mandatory=$false)]
     [switch]$UseFvm = $false
 )

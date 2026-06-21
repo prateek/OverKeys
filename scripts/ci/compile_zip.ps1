@@ -4,10 +4,10 @@
 param(
     [Parameter(Mandatory=$true)]
     [string]$StagingPath,
-    
+
     [Parameter(Mandatory=$true)]
     [string]$OutputPath,
-    
+
     [Parameter(Mandatory=$true)]
     [string]$Version
 )

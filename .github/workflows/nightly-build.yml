@@ -44,7 +44,7 @@ jobs:
 
           # Skip if it's a release commit or merge commit
           if [[ "$COMMIT_MSG" == "chore: release"* ]] || [[ "$COMMIT_MSG" == "Merge"* ]]; then
-            echo "should_run_nightly=false" >> $GITHUB_OUTPUT
+            echo "should_run_nightly=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -58,12 +58,12 @@ jobs:
           fi
 
           # Only run nightly if last commit is feat or fix AND was pushed within last 24 hours
-          if [ $HOURS_SINCE_COMMIT -le 24 ] && ([[ "$COMMIT_MSG" == "feat:"* ]] || [[ "$COMMIT_MSG" == "fix:"* ]]); then
-            echo "should_run_nightly=true" >> $GITHUB_OUTPUT
-            echo "commit_type=$COMMIT_TYPE" >> $GITHUB_OUTPUT
+          if [[ $HOURS_SINCE_COMMIT -le 24 && ( $COMMIT_MSG == feat:* || $COMMIT_MSG == fix:* ) ]]; then
+            echo "should_run_nightly=true" >> "$GITHUB_OUTPUT"
+            echo "commit_type=$COMMIT_TYPE" >> "$GITHUB_OUTPUT"
           else
-            echo "should_run_nightly=false" >> $GITHUB_OUTPUT
-            echo "commit_type=$COMMIT_TYPE" >> $GITHUB_OUTPUT
+            echo "should_run_nightly=false" >> "$GITHUB_OUTPUT"
+            echo "commit_type=$COMMIT_TYPE" >> "$GITHUB_OUTPUT"
           fi
 
   # Build nightly installers
