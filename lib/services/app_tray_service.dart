@@ -19,6 +19,8 @@ class AppTrayService {
     required VoidCallback onToggleVisibilityClicked,
     required VoidCallback onReloadConfigClicked,
   }) async {
+    // TODO(macos): supply a monochrome template menu-bar image so the tray icon
+    // sizes correctly and adapts to light/dark; the full-color PNG is a stopgap.
     final String iconPath = Platform.isWindows
         ? 'assets/images/app_icon.ico'
         : 'assets/images/app_icon.png';

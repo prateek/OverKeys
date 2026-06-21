@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:overkeys/models/keyboard_layouts.dart';
@@ -6,6 +7,7 @@ import 'package:overkeys/providers/app_state_provider.dart';
 import 'package:overkeys/providers/preferences_provider.dart';
 import 'package:overkeys/utils/key_code.dart';
 import 'package:overkeys/utils/hooks.dart';
+import 'package:overkeys/utils/mac_key_listener.dart';
 import 'package:overkeys/utils/logger.dart';
 
 /// Service for handling keyboard events and user layer switching
@@ -22,24 +24,56 @@ class KeyEventService {
   /// ReceivePort for keyboard events
   ReceivePort? _receivePort;
 
+  /// macOS global keyboard listener (null on other platforms)
+  MacKeyListener? _macKeyListener;
+
   /// Sets up the keyboard event listener
+  ///
+  /// Both platform backends deliver events as `[vkCode, isPressed, isShiftDown]`
+  /// (plus session strings) so [handleKeyEvent] is platform-agnostic. On Windows
+  /// the events come from a low-level hook running in a spawned isolate; on macOS
+  /// they come from an hid_listener event tap relayed through the same port.
   void setupKeyListener(ReceivePort Function() createReceivePort,
       Function(dynamic) handleKeyEvent) {
+    if (!Platform.isWindows && !Platform.isMacOS) {
+      _log.error('Keyboard listener is not supported on this platform');
+      return;
+    }
+
     _receivePort = createReceivePort();
-    Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
-      // Only attach listener after isolate spawn succeeds
+    if (Platform.isWindows) {
+      Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
+        // Only attach listener after isolate spawn succeeds
+        _receivePort!.listen(handleKeyEvent);
+      }).catchError((error) {
+        // Close the unused port before handling error
+        _receivePort?.close();
+        _receivePort = null;
+        _log.error('Error spawning Isolate', error: error);
+        throw error;
+      });
+    } else {
       _receivePort!.listen(handleKeyEvent);
-    }).catchError((error) {
-      // Close the unused port before handling error
-      _receivePort?.close();
-      _receivePort = null;
-      _log.error('Error spawning Isolate', error: error);
-      throw error;
-    });
+      _macKeyListener = MacKeyListener(_receivePort!.sendPort);
+      if (!_macKeyListener!.start()) {
+        _log.error('Failed to start macOS keyboard listener');
+      }
+    }
+  }
+
+  /// Tears down the platform keyboard listener.
+  void stopKeyListener() {
+    if (Platform.isWindows) {
+      unhook();
+    } else {
+      _macKeyListener?.stop();
+      _macKeyListener = null;
+    }
   }
 
   /// Disposes of resources and closes the receive port
   void dispose() {
+    stopKeyListener();
     _receivePort?.close();
     _receivePort = null;
     _activeTriggers.clear();

@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
+  hid_listener
   hotkey_manager_linux
   screen_retriever_linux
   tray_manager

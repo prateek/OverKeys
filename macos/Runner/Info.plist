@@ -28,5 +28,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<!--
+		Run as a menu-bar / agent app with no Dock icon, matching the Windows
+		build's "skip taskbar" behaviour. OverKeys is driven from its tray icon.
+	-->
+	<key>LSUIElement</key>
+	<true/>
 </dict>
 </plist>

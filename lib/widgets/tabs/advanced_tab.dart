@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:overkeys/widgets/options/options.dart';
 import 'package:overkeys/services/config_service.dart';
 import 'package:overkeys/models/user_config.dart';
@@ -201,12 +202,12 @@ class AdvancedTab extends ConsumerWidget {
                 final configPath = await configService.configPath;
                 final file = File(configPath);
 
-                if (await file.exists()) {
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
-                } else {
+                if (!await file.exists()) {
                   await configService.saveConfig(UserConfig());
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
                 }
+                // Opens the config file with the OS default handler on every
+                // desktop platform (url_launcher is already a dependency).
+                await launchUrl(Uri.file(configPath));
               } catch (e) {
                 debugPrint('Error opening config file: $e');
               }
