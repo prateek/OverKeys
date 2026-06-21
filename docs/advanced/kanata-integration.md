@@ -16,7 +16,7 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
 
 ### Configuring OverKeys
 
-1. Right-click the OverKeys icon in the system tray
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **General** tab
 4. Click **Open Config** to edit the configuration file
@@ -42,7 +42,8 @@ When running Kanata, use the `-p` flag to enable TCP communication:
 kanata.exe -p 127.0.0.1:4039
 ```
 
-For convenience, create a shortcut for `kanata_gui.exe`:
+On Windows, create a shortcut for `kanata_gui.exe` if you want Kanata to start
+automatically:
 
 1. Right-click > Create Shortcut
 2. Edit the shortcut properties

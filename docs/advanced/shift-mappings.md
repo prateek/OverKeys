@@ -12,7 +12,7 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Click **Open Config**
@@ -31,7 +31,7 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
     ```
 
 6. Save the file
-7. Right-click the tray icon and click **Reload config** to apply changes
+7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ## Default Shift Mappings
 

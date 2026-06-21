@@ -18,7 +18,7 @@ OverKeys preferences are organized into ten tabs:
 
 To open the Preferences window:
 
-1. Right-click the OverKeys icon in the system tray
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences** from the context menu
 
 ## General Tab

@@ -12,7 +12,7 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
 ### Turning the setting on
 
 1. Open OverKeys
-2. Right-click the OverKeys icon in the system tray
+2. Right-click the OverKeys icon in the system tray or macOS menu bar
 3. Select **Preferences**
 4. Go to the **Advanced** tab
 5. Toggle the **Turn on advanced settings** option
@@ -20,7 +20,7 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Click **Open Config**
@@ -28,24 +28,24 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
 
    ```json
    {
-   	"userLayouts": [
-   		{
-   			"name": "MyCustomLayout",
-   			"keys": [
-   				["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "BSPC"],
-   				["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]"],
-   				["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
-   				["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"],
-   				[" "]
-   			]
-   		}
-   	],
-   	"defaultUserLayout": "MyCustomLayout"
+     "userLayouts": [
+       {
+         "name": "MyCustomLayout",
+         "keys": [
+           ["`", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-", "=", "BSPC"],
+           ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "[", "]"],
+           ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
+           ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"],
+           [" "]
+         ]
+       }
+     ],
+     "defaultUserLayout": "MyCustomLayout"
    }
    ```
 
 6. Save the file
-7. Right-click the tray icon and click **Reload config** to apply changes
+7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ## Default User Layouts
 
@@ -121,14 +121,14 @@ If `wide` is not specified or set to `false`, the default positions will be used
 
    ```jsonc
    {
-   	"name": "Compact4x4",
-   	"keys": [
-   		[""], // Mandatory top row, show top row setting turned off
-   		["1", "2", "3", "A"],
-   		["4", "5", "6", "B"],
-   		["7", "8", "9", "C"],
-   		["*", "0", "#", "D"],
-   	],
+     "name": "Compact4x4",
+     "keys": [
+       [""], // Mandatory top row, show top row setting turned off
+       ["1", "2", "3", "A"],
+       ["4", "5", "6", "B"],
+       ["7", "8", "9", "C"],
+       ["*", "0", "#", "D"],
+     ],
    }
    ```
 

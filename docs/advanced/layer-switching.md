@@ -11,7 +11,7 @@ For a more native layer switching experience and synchronization, consider using
 ### Turning the setting on
 
 1. Open OverKeys
-2. Right-click the OverKeys icon in the system tray
+2. Right-click the OverKeys icon in the system tray or macOS menu bar
 3. Select **Preferences**
 4. Go to the **General** tab
 5. Toggle the **Enable advanced settings** option
@@ -19,7 +19,7 @@ For a more native layer switching experience and synchronization, consider using
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **General** tab
 4. Click **Open Config**
@@ -65,7 +65,7 @@ For a more native layer switching experience and synchronization, consider using
    > **Note:** For best compatibility, use F13–F24 as triggers, or any key (not alias) listed in [Supported Keys](./supported-keys.md). The `type` field determines if the layer is active only while the trigger is held (`"held"`) or toggles on/off with each press (`"toggle"`).
 
 6. Save the file
-7. Right-click the tray icon and click **Reload config** to apply changes
+7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ## Creating Custom Layers
 

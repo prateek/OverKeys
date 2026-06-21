@@ -4,7 +4,7 @@ OverKeys allows you to define custom aliases for key combinations. This is usefu
 
 ## Setup Instructions
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
@@ -24,7 +24,7 @@ OverKeys allows you to define custom aliases for key combinations. This is usefu
    ```
 
 7. Save the file
-8. Right-click the tray icon and click **Reload config** to apply changes
+8. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ## Configuration Details
 

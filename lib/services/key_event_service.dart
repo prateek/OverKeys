@@ -65,6 +65,7 @@ class KeyEventService {
     void Function() fadeIn,
     void Function() resetAutoHideTimer,
     void Function() cancelAutoHideTimer,
+    void Function(String reason) showHookError,
   ) {
     try {
       if (message is! List) return;
@@ -81,8 +82,9 @@ class KeyEventService {
           keyboardNotifier.clearKeyPressStates();
         }
         if (message[0] == 'hook_error') {
-          _log.warning(
-              'Keyboard hook setup failed: ${message.length > 1 ? message[1] : 'unknown'}');
+          final reason = message.length > 1 ? message[1].toString() : 'unknown';
+          _log.warning('Keyboard hook setup failed: $reason');
+          showHookError(reason);
         }
         return;
       }

@@ -188,9 +188,34 @@ class _MainAppState extends ConsumerState<MainApp>
   void _setupKeyListener() {
     _keyEventService.setupKeyListener(
       () => ReceivePort(),
-      (message) => _keyEventService.handleKeyEvent(message, ref, _fadeIn,
-          _resetAutoHideTimer, () => _autoHideManager.cancelAutoHideTimer()),
+      (message) => _keyEventService.handleKeyEvent(
+          message,
+          ref,
+          _fadeIn,
+          _resetAutoHideTimer,
+          () => _autoHideManager.cancelAutoHideTimer(),
+          _showHookError),
     );
+  }
+
+  void _showHookError(String reason) {
+    _fadeIn();
+    _autoHideManager.showOverlay(
+      ref,
+      _hookErrorMessage(reason),
+      const Icon(LucideIcons.info),
+    );
+  }
+
+  String _hookErrorMessage(String reason) {
+    switch (reason) {
+      case 'input_monitoring_permission':
+        return 'Grant Input Monitoring\nand reopen';
+      case 'unsupported_platform':
+        return 'Keyboard hook unsupported';
+      default:
+        return 'Keyboard hook unavailable';
+    }
   }
 
   void _resetAutoHideTimer() {
