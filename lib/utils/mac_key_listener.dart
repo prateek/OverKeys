@@ -21,9 +21,16 @@ import 'logger.dart';
 /// which reports layout-independent virtual-key codes, and keeps the rendered
 /// overlay consistent across platforms.
 ///
-/// On macOS the underlying event tap requires the app to be granted Accessibility
-/// / Input Monitoring permission (System Settings -> Privacy & Security). Without
-/// it the listener registers but never receives events.
+/// The underlying event tap requires the app to be granted Accessibility
+/// permission (System Settings -> Privacy & Security -> Accessibility). macOS
+/// shows no prompt; the user must add the app by hand. Without it the listener
+/// registers but never receives events.
+///
+/// Known parity gaps vs the Windows hook (follow-ups, not handled here):
+/// - No session lock/unlock signal, so keys held across a lock can stay
+///   highlighted (the Windows hook clears state on `session_unlock`).
+/// - hid_listener also installs global mouse and media event taps that OverKeys
+///   does not use; only the keyboard tap is consumed.
 class MacKeyListener {
   MacKeyListener(this._sendPort);
 
