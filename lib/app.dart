@@ -218,9 +218,9 @@ class _MainAppState extends ConsumerState<MainApp>
       case 'hook_spawn_failed':
         return 'Keyboard listener failed\nreopen OverKeys';
       case 'unsupported_platform':
-        return 'Keyboard hook unsupported';
+        return 'Keyboard listening unsupported';
       default:
-        return 'Keyboard hook unavailable';
+        return 'Keyboard listening unavailable';
     }
   }
 

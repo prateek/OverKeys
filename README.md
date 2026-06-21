@@ -169,7 +169,7 @@ For complete feature details, see the [documentation](docs/index.md).
 
 ### Installation
 
-Windows users can install packaged releases. macOS users currently build from
+Windows users can install packaged releases. macOS users can build the app from
 source.
 
 1. **Using Winget (Recommended)**

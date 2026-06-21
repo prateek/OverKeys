@@ -51,11 +51,11 @@ listen for global key events.
 
 ## First Launch
 
-After installation:
+After starting OverKeys:
 
-1. OverKeys will launch automatically
-2. The application will appear in your system tray or macOS menu bar
-3. Right-click the OverKeys icon to access preferences and configuration options
+1. Windows installer builds may launch automatically after installation. Portable ZIP and macOS source builds start when you open the app manually.
+2. The OverKeys icon appears in the Windows system tray or macOS menu bar.
+3. Right-click the OverKeys icon to open preferences and configuration options.
 
 ## Updating OverKeys
 

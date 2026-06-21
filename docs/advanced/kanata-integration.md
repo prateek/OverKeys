@@ -58,7 +58,7 @@ automatically:
 3. Add `-p 127.0.0.1:4039` to the target field
 4. Place the shortcut in your Windows Startup folder
 
-> **Note**: OverKeys currently verifies layer-change reporting with Windows
+> **Note**: OverKeys verifies layer-change reporting with Windows
 > `kanata_gui.exe` using LLHOOK. Other Kanata builds must support TCP
 > layer-change messages.
 

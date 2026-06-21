@@ -182,11 +182,8 @@ int lowLevelKeyboardProc(
     sendPort?.send([keyCode, isPressed, isShiftDown]);
 
     if (!isPressed) {
-      if (!isShiftDown) {
-        sendPort?.send([keyCode, false, true]);
-      } else {
-        sendPort?.send([keyCode, false, false]);
-      }
+      final oppositeShiftState = !isShiftDown;
+      sendPort?.send([keyCode, false, oppositeShiftState]);
     }
   }
   return CallNextHookEx(hookId ?? 0, nCode, wParam, lParam);
@@ -458,11 +455,8 @@ Pointer<Void> macKeyboardProc(
   sendPort?.send([keyCode, isPressed, isShiftDown]);
 
   if (!isPressed) {
-    if (!isShiftDown) {
-      sendPort?.send([keyCode, false, true]);
-    } else {
-      sendPort?.send([keyCode, false, false]);
-    }
+    final oppositeShiftState = !isShiftDown;
+    sendPort?.send([keyCode, false, oppositeShiftState]);
   }
 
   return event;
