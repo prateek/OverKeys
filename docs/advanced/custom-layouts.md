@@ -20,10 +20,10 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray or menu bar icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row
+4. Click **Open** next to **Open config file**
 5. In the JSON file, edit the `userLayouts` array and set the `defaultUserLayout` field:
 
    ```json
@@ -45,7 +45,7 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
    ```
 
 6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Default User Layouts
 

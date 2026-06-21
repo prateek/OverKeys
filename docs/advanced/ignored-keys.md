@@ -86,7 +86,7 @@ To edit your configuration file:
 1. Open OverKeys Preferences
 2. Navigate to the **Advanced** tab
 3. Toggle the **Turn on advanced settings** option
-4. Click **Open** in the **Open config file** row
+4. Click **Open** next to **Open config file**
 5. Add or modify the `ignoredKeys` array
 6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes

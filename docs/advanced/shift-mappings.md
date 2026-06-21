@@ -12,11 +12,11 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray or menu bar icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
-5. Click **Open** in the **Open config file** row
+5. Click **Open** next to **Open config file**
 6. In the JSON file, add or modify the `customShiftMappings` object:
 
     ```jsonc
@@ -32,7 +32,7 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
     ```
 
 7. Save the file
-8. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+8. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Default Shift Mappings
 

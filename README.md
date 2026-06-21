@@ -169,8 +169,8 @@ For complete feature details, see the [documentation](docs/index.md).
 
 ### Installation
 
-OverKeys can be installed through several methods. Windows has packaged
-release builds; macOS can be built from source.
+Windows users can install packaged releases. macOS users currently build from
+source.
 
 1. **Using Winget (Recommended)**
 
@@ -195,7 +195,7 @@ release builds; macOS can be built from source.
    open build/macos/Build/Products/Debug/OverKeys.app
    ```
 
-   macOS will ask for Input Monitoring permission the first time OverKeys starts
+   macOS asks for Input Monitoring permission the first time OverKeys starts
    listening for global key events.
 
 For detailed installation instructions, see the [Installation Guide](/docs/getting-started/installation.md).

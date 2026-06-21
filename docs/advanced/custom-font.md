@@ -23,10 +23,10 @@ When enabled, OverKeys will use the font specified in your configuration file fo
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray or menu bar icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row
+4. Click **Open** next to **Open config file**
 5. In the JSON file, set the `customFont` field to your preferred font name:
 
     ```json
@@ -36,7 +36,7 @@ When enabled, OverKeys will use the font specified in your configuration file fo
     ```
 
 6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Implementation Notes
 

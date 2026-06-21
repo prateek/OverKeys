@@ -69,8 +69,8 @@ flutter build windows
 flutter build macos
 ```
 
-The Windows release executable will be located at
-`build\windows\x64\runner\Release`. The macOS app bundle will be located under
+Flutter writes the Windows release executable to
+`build\windows\x64\runner\Release` and the macOS app bundle to
 `build/macos/Build/Products/Release`.
 
 ## Coding Standards

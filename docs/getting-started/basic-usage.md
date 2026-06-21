@@ -1,6 +1,6 @@
 # Basic Usage
 
-OverKeys runs from the Windows system tray or macOS menu bar to provide quick access to its features without cluttering your desktop.
+OverKeys runs from the Windows system tray or macOS menu bar.
 
 ## Accessing the Tray or Menu Bar Icon
 

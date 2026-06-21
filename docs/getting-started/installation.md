@@ -1,7 +1,7 @@
 # Installation
 
-This guide walks through installing OverKeys on Windows and building the macOS
-app bundle from source.
+Install OverKeys from a Windows release build, or build the macOS app bundle
+from source.
 
 ## Methods
 
@@ -19,19 +19,19 @@ If you prefer manual installation:
 
 1. Download the latest [EXE installer](https://github.com/conventoangelo/OverKeys/releases) from the official GitHub releases page
 2. Run the installer and follow the on-screen instructions
-3. Once installed, OverKeys will be available for use
+3. Launch OverKeys after installation
 
 ### 3. Using ZIP file
 
 For a portable version without installation:
 
 1. Download the [portable ZIP file](https://github.com/conventoangelo/OverKeys/releases) from the GitHub releases page
-2. Extract the ZIP file to any location of your choice
+2. Extract the ZIP file to any folder
 3. Run `OverKeys.exe` from the extracted folder
 
 ### 4. Building the macOS App Bundle
 
-The macOS app can be built from source:
+Build the macOS app from source:
 
 ```bash
 flutter pub get

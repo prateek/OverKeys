@@ -26,10 +26,10 @@ When enabled, OverKeys will display your primary layout with functional key high
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray or menu bar icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row
+4. Click **Open** next to **Open config file**
 5. In the JSON file, set the `altLayout` field to your preferred alternative layout name:
 
     ```json
@@ -39,7 +39,7 @@ When enabled, OverKeys will display your primary layout with functional key high
     ```
 
 6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Default Alternative Layouts
 

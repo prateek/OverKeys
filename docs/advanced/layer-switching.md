@@ -19,10 +19,10 @@ For a more native layer switching experience and synchronization, consider using
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray or menu bar icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row
+4. Click **Open** next to **Open config file**
 5. In the JSON file, edit the `userLayouts` array and set the `defaultUserLayout` field. Each layer must include:
 
    - `name`: Unique name for the layer
@@ -65,7 +65,7 @@ For a more native layer switching experience and synchronization, consider using
    > **Note:** For best compatibility, use F13–F24 as triggers, or any key (not alias) listed in [Supported Keys](./supported-keys.md). The `type` field determines if the layer is active only while the trigger is held (`"held"`) or toggles on/off with each press (`"toggle"`).
 
 6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Creating Custom Layers
 
