@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -33,3 +35,6 @@ release-notes.md
 
 /secrets
 .fvm/
+
+# Reference repos cloned for local development (not part of the project)
+.refs/
