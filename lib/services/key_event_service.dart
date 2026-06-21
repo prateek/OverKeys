@@ -347,10 +347,4 @@ class KeyEventService {
   ) {
     return prefsState.isOnDefaultLayer(keyboardState.layout);
   }
-
-  /// Clears all active triggers
-  void clearActiveTriggers() {
-    _activeTriggers.clear();
-    _previousLayerStack.clear();
-  }
 }
