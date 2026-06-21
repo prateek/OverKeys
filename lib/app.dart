@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart'
@@ -26,7 +25,6 @@ import 'providers/keyboard_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/keyboard_screen.dart';
-import 'utils/hooks.dart';
 
 class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
@@ -126,10 +124,9 @@ class _MainAppState extends ConsumerState<MainApp>
   void dispose() {
     windowManager.removeListener(this);
     trayManager.removeListener(this);
-    unhook();
+    _keyEventService.dispose();
     _kanataService.dispose();
     _autoHideManager.dispose();
-    _keyEventService.clearActiveTriggers();
     _saveAllPreferences();
     super.dispose();
   }
@@ -189,7 +186,6 @@ class _MainAppState extends ConsumerState<MainApp>
 
   void _setupKeyListener() {
     _keyEventService.setupKeyListener(
-      () => ReceivePort(),
       (message) => _keyEventService.handleKeyEvent(message, ref, _fadeIn,
           _resetAutoHideTimer, () => _autoHideManager.cancelAutoHideTimer()),
     );

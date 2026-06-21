@@ -22,7 +22,7 @@
     </a>
   </p>
 
-  <h3 align="center">An open-source keyboard layout visualizer for Windows</h3>
+  <h3 align="center">An open-source keyboard layout visualizer for Windows and macOS</h3>
 
   <p align="center">
     <a href="#getting-started">Install Now</a>
@@ -187,6 +187,25 @@ OverKeys can be installed through several methods:
    - Download and extract the [portable ZIP file](https://github.com/conventoangelo/OverKeys/releases/latest)
 
 For detailed installation instructions, see the [Installation Guide](/docs/getting-started/installation.md).
+
+#### macOS
+
+macOS support is new, and the build is **unsigned**. Download `OverKeys-macos.zip` from the [latest macOS build](https://github.com/conventoangelo/OverKeys/actions/workflows/build-macos.yml) (or build it yourself with `flutter build macos --release`), then unzip it into `/Applications`.
+
+1. Remove the quarantine flag once, so macOS will open the unsigned app:
+
+   ```sh
+   xattr -d com.apple.quarantine /Applications/overkeys.app
+   ```
+
+2. Launch OverKeys. On first launch it prompts for two permissions, which you grant under **System Settings → Privacy & Security**:
+
+   - **Accessibility** — required to see keystrokes.
+   - **Input Monitoring** — required to read which keys are pressed.
+
+3. After granting both, quit and reopen the app.
+
+OverKeys lives in the menu bar (no Dock icon) and only displays your keystrokes; it never intercepts or modifies them.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

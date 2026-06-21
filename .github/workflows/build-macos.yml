@@ -1,0 +1,60 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [main, develop, refactor/**]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          # Pinned: lucide_icons 0.257.0 extends IconData, which became a final
+          # class in Flutter 3.44, breaking `flutter build`. Unpin once
+          # lucide_icons is bumped to a release that no longer subclasses IconData.
+          flutter-version: 3.41.9
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze project
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build macOS app
+        run: flutter build macos --release
+
+      - name: Package .app into a zip
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r -y OverKeys-macos.zip overkeys.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverKeys-macos
+          path: build/macos/Build/Products/Release/OverKeys-macos.zip
+          if-no-files-found: error

@@ -28,5 +28,11 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<!-- Menu-bar/overlay utility: no Dock icon, and the overlay never steals
+	     focus on launch. Mirrors the Windows tray (skipTaskbar) model. -->
+	<key>LSUIElement</key>
+	<true/>
 </dict>
 </plist>
