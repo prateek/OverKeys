@@ -23,8 +23,8 @@ import 'logger.dart';
 ///
 /// The underlying event tap requires the app to be granted Accessibility
 /// permission (System Settings -> Privacy & Security -> Accessibility). macOS
-/// shows no prompt; the user must add the app by hand. Without it the listener
-/// registers but never receives events.
+/// shows no prompt; the user must add the app by hand. Without it, creating the
+/// tap fails, so [start] returns false and the listener never registers.
 ///
 /// Known parity gaps vs the Windows hook (follow-ups, not handled here):
 /// - No session lock/unlock signal, so keys held across a lock can stay
@@ -46,13 +46,14 @@ class MacKeyListener {
       return false;
     }
     if (!backend.initialize()) {
-      _log.error('Failed to initialize hid_listener backend');
+      // The event tap can't be created until OverKeys is granted Accessibility.
+      _log.error('Failed to initialize hid_listener backend. Grant OverKeys '
+          'Accessibility permission (System Settings -> Privacy & Security).');
       return false;
     }
     _listenerId = backend.addKeyboardListener(_onKeyEvent);
     if (_listenerId == null) {
-      _log.error('Failed to register keyboard listener. '
-          'Grant Accessibility / Input Monitoring permission to OverKeys.');
+      _log.error('Failed to register keyboard listener');
       return false;
     }
     return true;
