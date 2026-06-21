@@ -176,6 +176,93 @@ void main() {
       });
     });
 
+    group('macOS key code normalization', () {
+      test('normalizes letter keys to Windows virtual key codes', () {
+        expect(normalizeMacOSKeyCode(0), VK_A);
+        expect(normalizeMacOSKeyCode(11), VK_B);
+        expect(normalizeMacOSKeyCode(12), VK_Q);
+      });
+
+      test('normalizes punctuation keys to Windows virtual key codes', () {
+        expect(normalizeMacOSKeyCode(24), VK_OEM_PLUS);
+        expect(normalizeMacOSKeyCode(27), VK_OEM_MINUS);
+        expect(normalizeMacOSKeyCode(43), VK_OEM_COMMA);
+        expect(normalizeMacOSKeyCode(47), VK_OEM_PERIOD);
+      });
+
+      test('normalizes navigation and modifier keys', () {
+        expect(normalizeMacOSKeyCode(55), VK_LWIN);
+        expect(normalizeMacOSKeyCode(56), VK_LSHIFT);
+        expect(normalizeMacOSKeyCode(59), VK_LCONTROL);
+        expect(normalizeMacOSKeyCode(123), VK_LEFT);
+        expect(normalizeMacOSKeyCode(126), VK_UP);
+      });
+
+      test('normalizes media and keypad keys without colliding with letters',
+          () {
+        expect(normalizeMacOSKeyCode(72), VK_VOLUME_UP);
+        expect(normalizeMacOSKeyCode(73), VK_VOLUME_DOWN);
+        expect(normalizeMacOSKeyCode(74), VK_VOLUME_MUTE);
+        expect(normalizeMacOSKeyCode(81), VK_OEM_PLUS);
+      });
+
+      test('returns null for unknown macOS key codes', () {
+        expect(normalizeMacOSKeyCode(93), isNull);
+        expect(normalizeMacOSKeyCode(999), isNull);
+      });
+
+      test('normalized key codes use existing shifted mappings', () {
+        final normalizedKeyCode = normalizeMacOSKeyCode(18)!;
+
+        expect(getKeyFromKeyCodeShift(normalizedKeyCode, false), '1');
+        expect(getKeyFromKeyCodeShift(normalizedKeyCode, true), '!');
+      });
+    });
+
+    group('MacOSModifierStateTracker', () {
+      test('tracks left and right shift independently', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(
+          tracker.updateForFlagsChanged(56, macOSCGEventFlagMaskShift),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(60, macOSCGEventFlagMaskShift),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(56, macOSCGEventFlagMaskShift),
+          isFalse,
+        );
+        expect(tracker.updateForFlagsChanged(60, 0), isFalse);
+      });
+
+      test('tracks left and right command independently', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(
+          tracker.updateForFlagsChanged(55, macOSCGEventFlagMaskCommand),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(54, macOSCGEventFlagMaskCommand),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(55, macOSCGEventFlagMaskCommand),
+          isFalse,
+        );
+        expect(tracker.updateForFlagsChanged(54, 0), isFalse);
+      });
+
+      test('ignores flagsChanged events for non-modifier keys', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(tracker.updateForFlagsChanged(0, 0), isNull);
+      });
+    });
+
     group('activeKeyCodeShiftMap manipulation', () {
       test('can be modified independently', () {
         final original = activeKeyCodeShiftMap[(0x31, false)];

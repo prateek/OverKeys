@@ -5,9 +5,14 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
+TemporaryDirectory.*/
+_Users_*swiftpm*.lock
+_*SourcePackages_workspace-state.json.lock
 migrate_working_dir/
 
 # IntelliJ related

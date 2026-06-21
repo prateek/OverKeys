@@ -4,11 +4,11 @@ OverKeys supports locale-specific key representations to accommodate different k
 
 ## Setup Instructions
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
-5. Click the **Open Config** button
+5. Click **Open** next to **Open config file**
 6. In the JSON file, add or modify the `customKeys` field to match your keyboard
 
    ```jsonc
@@ -193,7 +193,7 @@ OverKeys supports locale-specific key representations to accommodate different k
    ```
 
 7. Save the file
-8. Right-click the tray icon and click **Reload config** to apply changes
+8. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Creating Custom Locales
 
@@ -216,10 +216,10 @@ You can create custom locales by defining the `customKeys` object in your config
 
 ## Implementation Notes
 
-As of the moment, to support other locales, a user can:
+To support another locale, you can:
 
 1. Learn and define the key codes that the foreign keys use by building locally and inferring from the app's debug statements.
-2. Create a feature request to ask for help in defining these key codes, given that they state the keyboard they are using in Windows (e.g., US QWERTY, German QWERTZ).
+2. Open a feature request and include the operating system and keyboard layout, such as Windows US QWERTY or macOS German QWERTZ.
 3. Create a discussion to ask for help from the community.
 
-`keyCodeShiftMap` is almost the same as `customShiftMappings` field, except the latter just visually changes the keys, while the former logically maps the shift symbol of the original key to the new one. As such, there is no need for duplication of entries between the two fields.
+`keyCodeShiftMap` is similar to `customShiftMappings`, but `customShiftMappings` only changes how keys appear. `keyCodeShiftMap` maps each shifted symbol to a key code, so you do not need duplicate entries across the two fields.

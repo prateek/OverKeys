@@ -30,6 +30,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
+          flutter-version: "3.44.2"
           cache: true
 
       - name: Get dependencies
@@ -43,3 +44,39 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+  macos-build:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: "3.44.2"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build macOS debug app
+        run: flutter build macos --debug
+
+      - name: Build macOS release app
+        run: flutter build macos --release
+
+      - name: Verify release entitlements
+        run: |
+          codesign -d --entitlements :- build/macos/Build/Products/Release/OverKeys.app > release-entitlements.plist 2>/dev/null
+          if grep -q "com.apple.security.get-task-allow" release-entitlements.plist; then
+            echo "Release app must not include get-task-allow"
+            exit 1
+          fi
+          if grep -q "com.apple.security.app-sandbox" release-entitlements.plist; then
+            echo "Release app must not include App Sandbox"
+            exit 1
+          fi

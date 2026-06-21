@@ -1,8 +1,8 @@
 import 'package:win32/win32.dart';
 import '../services/config_service.dart';
 
-/// Key code mapping utilities for converting Windows virtual key codes
-/// to displayable key names and handling shift key variations
+/// Key code mapping utilities for converting platform key codes to displayable
+/// key names and handling shift key variations.
 /// Reference: https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 
 /// Default mapping from virtual key codes to key names
@@ -179,6 +179,192 @@ Map<(int, bool), String> defaultKeyCodeShiftMap = {
 Map<(int, bool), String> activeKeyCodeShiftMap =
     Map<(int, bool), String>.from(defaultKeyCodeShiftMap);
 
+const int macOSCGEventFlagMaskAlphaShift = 0x00010000;
+const int macOSCGEventFlagMaskShift = 0x00020000;
+const int macOSCGEventFlagMaskControl = 0x00040000;
+const int macOSCGEventFlagMaskAlternate = 0x00080000;
+const int macOSCGEventFlagMaskCommand = 0x00100000;
+
+/// Maps macOS hardware key codes from CGEvent taps to Windows virtual key codes.
+///
+/// OverKeys stores key mappings as Windows virtual key codes, so the macOS hook
+/// normalizes events before they reach the rest of the app.
+const Map<int, int> macOSKeyCodeToWindowsKeyCode = {
+  0: VK_A,
+  1: VK_S,
+  2: VK_D,
+  3: VK_F,
+  4: VK_H,
+  5: VK_G,
+  6: VK_Z,
+  7: VK_X,
+  8: VK_C,
+  9: VK_V,
+  11: VK_B,
+  12: VK_Q,
+  13: VK_W,
+  14: VK_E,
+  15: VK_R,
+  16: VK_Y,
+  17: VK_T,
+  18: 0x31,
+  19: 0x32,
+  20: 0x33,
+  21: 0x34,
+  22: 0x36,
+  23: 0x35,
+  24: VK_OEM_PLUS,
+  25: 0x39,
+  26: 0x37,
+  27: VK_OEM_MINUS,
+  28: 0x38,
+  29: 0x30,
+  30: VK_OEM_6,
+  31: VK_O,
+  32: VK_U,
+  33: VK_OEM_4,
+  34: VK_I,
+  35: VK_P,
+  36: VK_RETURN,
+  37: VK_L,
+  38: VK_J,
+  39: VK_OEM_7,
+  40: VK_K,
+  41: VK_OEM_1,
+  42: VK_OEM_5,
+  43: VK_OEM_COMMA,
+  44: VK_OEM_2,
+  45: VK_N,
+  46: VK_M,
+  47: VK_OEM_PERIOD,
+  48: VK_TAB,
+  49: VK_SPACE,
+  50: VK_OEM_3,
+  51: VK_BACK,
+  53: VK_ESCAPE,
+  54: VK_RWIN,
+  55: VK_LWIN,
+  56: VK_LSHIFT,
+  57: VK_CAPITAL,
+  58: VK_LMENU,
+  59: VK_LCONTROL,
+  60: VK_RSHIFT,
+  61: VK_RMENU,
+  62: VK_RCONTROL,
+  64: VK_F17,
+  65: VK_DECIMAL,
+  67: VK_MULTIPLY,
+  69: VK_ADD,
+  71: VK_CLEAR,
+  72: VK_VOLUME_UP,
+  73: VK_VOLUME_DOWN,
+  74: VK_VOLUME_MUTE,
+  75: VK_DIVIDE,
+  76: VK_RETURN,
+  78: VK_SUBTRACT,
+  79: VK_F18,
+  80: VK_F19,
+  81: VK_OEM_PLUS,
+  82: VK_NUMPAD0,
+  83: VK_NUMPAD1,
+  84: VK_NUMPAD2,
+  85: VK_NUMPAD3,
+  86: VK_NUMPAD4,
+  87: VK_NUMPAD5,
+  88: VK_NUMPAD6,
+  89: VK_NUMPAD7,
+  90: VK_F20,
+  91: VK_NUMPAD8,
+  92: VK_NUMPAD9,
+  96: VK_F5,
+  97: VK_F6,
+  98: VK_F7,
+  99: VK_F3,
+  100: VK_F8,
+  101: VK_F9,
+  103: VK_F11,
+  105: VK_F13,
+  106: VK_F16,
+  107: VK_F14,
+  109: VK_F10,
+  111: VK_F12,
+  113: VK_F15,
+  114: VK_INSERT,
+  115: VK_HOME,
+  116: VK_PRIOR,
+  117: VK_DELETE,
+  118: VK_F4,
+  119: VK_END,
+  120: VK_F2,
+  121: VK_NEXT,
+  122: VK_F1,
+  123: VK_LEFT,
+  124: VK_RIGHT,
+  125: VK_DOWN,
+  126: VK_UP,
+};
+
+/// Normalizes a macOS hardware key code to the Windows virtual key code used by
+/// the rest of the app. Unknown keys return null so they cannot collide with
+/// unrelated Windows virtual key codes.
+int? normalizeMacOSKeyCode(int keyCode) {
+  return macOSKeyCodeToWindowsKeyCode[keyCode];
+}
+
+/// Returns true when the aggregate macOS flags indicate Shift is down.
+bool isMacOSShiftDown(int flags) {
+  return (flags & macOSCGEventFlagMaskShift) != 0;
+}
+
+/// Tracks side-specific modifier state for macOS flagsChanged events.
+///
+/// CGEvent flags report aggregate modifier families, so the event key code must
+/// be combined with the previous state to distinguish releasing one side while
+/// the opposite side remains held.
+class MacOSModifierStateTracker {
+  final Set<int> _pressedMacKeyCodes = {};
+
+  bool? updateForFlagsChanged(int macKeyCode, int flags) {
+    final flagMask = macOSModifierFlagMask(macKeyCode);
+    if (flagMask == null) return null;
+
+    final isModifierFamilyDown = (flags & flagMask) != 0;
+    if (isModifierFamilyDown && !_pressedMacKeyCodes.contains(macKeyCode)) {
+      _pressedMacKeyCodes.add(macKeyCode);
+      return true;
+    }
+
+    _pressedMacKeyCodes.remove(macKeyCode);
+    if (!isModifierFamilyDown) {
+      _pressedMacKeyCodes.removeWhere((pressedKeyCode) =>
+          macOSModifierFlagMask(pressedKeyCode) == flagMask);
+    }
+    return false;
+  }
+}
+
+/// Returns the aggregate macOS modifier flag mask associated with a key code.
+int? macOSModifierFlagMask(int macKeyCode) {
+  switch (macKeyCode) {
+    case 54:
+    case 55:
+      return macOSCGEventFlagMaskCommand;
+    case 56:
+    case 60:
+      return macOSCGEventFlagMaskShift;
+    case 57:
+      return macOSCGEventFlagMaskAlphaShift;
+    case 58:
+    case 61:
+      return macOSCGEventFlagMaskAlternate;
+    case 59:
+    case 62:
+      return macOSCGEventFlagMaskControl;
+    default:
+      return null;
+  }
+}
+
 /// Loads custom key mappings from user configuration
 Future<void> loadCustomKeys() async {
   final config = await ConfigService().loadConfig();
@@ -204,8 +390,8 @@ Future<void> loadCustomKeys() async {
   }
 }
 
-/// Converts a Windows virtual key code to a displayable key name
-/// Takes into account whether shift is pressed
+/// Converts a normalized key code to a displayable key name.
+/// Takes into account whether shift is pressed.
 String getKeyFromKeyCodeShift(int keyCode, bool isShiftDown) {
   return activeKeyCodeShiftMap[(keyCode, isShiftDown)] ??
       defaultKeyCodeMap[keyCode] ??

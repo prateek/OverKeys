@@ -7,7 +7,7 @@ Learning Mode helps new users practice proper finger placement by color-coding k
 ## How to Enable Learning Mode
 
 1. Open OverKeys
-2. Right-click the OverKeys icon in the system tray
+2. Right-click the OverKeys icon in the system tray or macOS menu bar
 3. Select **Preferences**
 4. Go to the **Learn** tab
 5. Toggle the **Enable Learning Mode** option

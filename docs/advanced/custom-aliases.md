@@ -4,11 +4,11 @@ OverKeys allows you to define custom aliases for key combinations. This is usefu
 
 ## Setup Instructions
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
-5. Click the **Open Config** button
+5. Click **Open** next to **Open config file**
 6. In the JSON file, add or modify the `customAliases` field to match your desired aliases
 
    ```jsonc
@@ -24,7 +24,7 @@ OverKeys allows you to define custom aliases for key combinations. This is usefu
    ```
 
 7. Save the file
-8. Right-click the tray icon and click **Reload config** to apply changes
+8. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Configuration Details
 
@@ -42,7 +42,7 @@ You can use the following modifiers in your key combinations:
 - `Control` (matches both Left and Right Control)
 - `Shift` (matches both Left and Right Shift)
 - `Alt` (matches both Left and Right Alt)
-- `Win` (matches both Left and Right Windows key)
+- `Win` (matches either Windows key or Command key on macOS)
 
 You can also specify specific sides if needed (e.g., `LControl`, `RShift`), but the generic modifiers are usually more convenient.
 

@@ -14,7 +14,7 @@ The 6-column layout feature in OverKeys allows you to visualize 6-column split m
 ### Turning the setting on
 
 1. Open OverKeys
-2. Right-click the OverKeys icon in the system tray
+2. Right-click the OverKeys icon in the system tray or macOS menu bar
 3. Select **Preferences**
 4. Go to the **Advanced** tab
 5. Toggle the **Turn on advanced settings** option
@@ -22,10 +22,10 @@ The 6-column layout feature in OverKeys allows you to visualize 6-column split m
 
 ### Using Configuration File
 
-1. Right-click the OverKeys tray icon
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open config file**
+4. Click **Open** next to **Open config file**
 5. In the JSON file, edit the `userLayouts` array and set the `defaultUserLayout` field:
 
     ```jsonc
@@ -50,7 +50,7 @@ The 6-column layout feature in OverKeys allows you to visualize 6-column split m
     ```
 
 6. Save the file
-7. Right-click the tray icon and click **Reload config** to apply changes
+7. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ## Implementation Notes
 

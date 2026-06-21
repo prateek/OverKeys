@@ -22,7 +22,7 @@
     </a>
   </p>
 
-  <h3 align="center">An open-source keyboard layout visualizer for Windows</h3>
+  <h3 align="center">An open-source keyboard layout visualizer for Windows and macOS</h3>
 
   <p align="center">
     <a href="#getting-started">Install Now</a>
@@ -44,9 +44,9 @@
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#documentation">Documentation</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#building-from-source">Building from Source</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#supporting">Supporting</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -169,22 +169,35 @@ For complete feature details, see the [documentation](docs/index.md).
 
 ### Installation
 
-OverKeys can be installed through several methods:
+Windows users can install packaged releases. macOS users can build the app from
+source.
 
-1. **Using Winget (Recommended)**
+1. **Using Winget (Recommended for Windows)**
 
    ```pwsh
    winget install AngeloConvento.OverKeys
    ```
 
-   <sub>Note: Please check if `winget` version is updated to the latest version as in the repo. Otherwise, use the [installer](https://github.com/conventoangelo/OverKeys/releases/latest) to have the latest version.</sub>
+   <sub>Note: If `winget` does not offer the latest release yet, use the [installer](https://github.com/conventoangelo/OverKeys/releases/latest).</sub>
 
-2. **Using the Installer**
+2. **Using the Windows Installer**
 
    - Download and run the latest [EXE installer](https://github.com/conventoangelo/OverKeys/releases/latest).
 
-3. **Portable Version**
+3. **Windows Portable ZIP**
    - Download and extract the [portable ZIP file](https://github.com/conventoangelo/OverKeys/releases/latest)
+
+4. **macOS App Bundle**
+
+   ```bash
+   flutter pub get
+   flutter build macos --debug
+   open build/macos/Build/Products/Debug/OverKeys.app
+   ```
+
+   Use Flutter 3.44.2 for local builds. macOS asks for Input Monitoring
+   permission the first time OverKeys starts listening for global key events.
+   If you grant permission after launch, quit and reopen OverKeys.
 
 For detailed installation instructions, see the [Installation Guide](/docs/getting-started/installation.md).
 

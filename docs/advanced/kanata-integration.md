@@ -16,11 +16,13 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
 
 ### Configuring OverKeys
 
-1. Right-click the OverKeys icon in the system tray
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
-3. Go to the **General** tab
-4. Click **Open Config** to edit the configuration file
-5. Modify the `overkeys_config.json` file:
+3. Go to the **Advanced** tab
+4. Toggle the **Turn on advanced settings** option
+5. Toggle the **Connect to Kanata** option
+6. Click **Open** next to **Open config file** to edit the configuration file
+7. Modify the `overkeys_config.json` file:
 
    ```json
    {
@@ -31,25 +33,33 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
    }
    ```
 
-6. Save the file
-7. Toggle the **Connect to Kanata** option off then on again to apply changes
+8. Save the file
+9. Right-click the OverKeys icon in the system tray or macOS menu bar, then click **Reload config** to apply changes
 
 ### Configuring Kanata
 
-When running Kanata, use the `-p` flag to enable TCP communication:
+When running Kanata, use the `-p` flag to enable TCP communication. On Windows:
 
 ```pwsh
 kanata.exe -p 127.0.0.1:4039
 ```
 
-For convenience, create a shortcut for `kanata_gui.exe`:
+If your macOS or Linux Kanata build supports TCP layer-change messages, run:
+
+```bash
+kanata -p 127.0.0.1:4039
+```
+
+On Windows, create a shortcut for `kanata_gui.exe` if you want Kanata to start
+automatically:
 
 1. Right-click > Create Shortcut
 2. Edit the shortcut properties
 3. Add `-p 127.0.0.1:4039` to the target field
 4. Place the shortcut in your Windows Startup folder
 
-> **Note**: This feature is only guaranteed to work with Kanata implementations that use Windows LLHOOK (like kanata_gui.exe).
+> **Note**: Windows `kanata_gui.exe` with LLHOOK is the tested setup.
+> Other Kanata builds must support TCP layer-change messages.
 
 ## Adding Kanata Layers
 

@@ -56,6 +56,7 @@ View coverage report (requires `lcov`):
 
 ```bash
 genhtml coverage/lcov.info -o coverage/html
+open coverage/html/index.html   # macOS
 start coverage/html/index.html  # Windows
 ```
 
@@ -96,7 +97,7 @@ test('serialization and deserialization are symmetric', () {
 
 **Coverage**:
 
-- `key_code_test.dart` (30 tests): Windows virtual key code mappings, shift key variations
+- `key_code_test.dart`: Windows virtual key mappings, macOS key-code normalization, and shift key variations
 - `font_options_test.dart` (12 tests): Available font families validation
 - `theme_manager_test.dart` (11 tests): Light/dark color schemes
 
@@ -201,14 +202,15 @@ Always test:
 
 ## Current Test Coverage
 
-| Category  | Files  | Tests   | Notes                                        |
-| --------- | ------ | ------- | -------------------------------------------- |
-| Models    | 3      | 39      | Full coverage of data models                 |
-| Utils     | 3      | 53      | Key codes, fonts, and themes                 |
-| Providers | 3      | 63      | All three state providers covered            |
-| Services  | 4      | 67      | State, config, Kanata, startup               |
-| Widgets   | 6      | 57      | Options widgets and overlays                 |
-| **Total** | **19** | **279** | Comprehensive coverage of core functionality |
+| Category  | Files  | Tests   | Notes                                      |
+| --------- | ------ | ------- | ------------------------------------------ |
+| Models    | 3      | 36      | Data models                                |
+| Utils     | 4      | 87      | Key codes, fonts, logging, and themes      |
+| Providers | 3      | 63      | State providers                            |
+| Services  | 4      | 67      | State, config, Kanata, startup             |
+| Widgets   | 6      | 57      | Options widgets and overlays               |
+| Root      | 1      | 3       | Additional UserConfig ignored-key coverage |
+| **Total** | **21** | **313** | Matches the current `flutter test` run     |
 
 ### 4. Service Tests (`test/services/`)
 
@@ -320,7 +322,9 @@ See `.github/workflows/test.yml` for CI configuration.
 
 ### Platform-Specific Tests
 
-Some tests use Windows-only packages (win32, hotkey_manager). These are skipped on non-Windows platforms automatically.
+Key-code tests use Windows virtual key constants because the app stores custom
+key mappings in that format. macOS keyboard events are normalized to those
+constants before the app handles them.
 
 ### Slow Tests
 

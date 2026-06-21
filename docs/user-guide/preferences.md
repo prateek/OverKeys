@@ -18,7 +18,7 @@ OverKeys preferences are organized into ten tabs:
 
 To open the Preferences window:
 
-1. Right-click the OverKeys icon in the system tray
+1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences** from the context menu
 
 ## General Tab
@@ -121,6 +121,7 @@ Access additional configuration options:
 - **Use custom font**: Enable using a custom font for key labels
 - **Use 6-column layout**: Enable 6-column split matrix layout
 - **Connect to Kanata**: Enable integration with Kanata keyboard software
+- **Hide on default layer**: Hide the overlay when Kanata reports the default layer
 - **Keyboard follows mouse**: EXPERIMENTAL - Makes the keyboard follow your mouse cursor across monitors
 - **Open config file**: Access and modify the configuration file directly
 

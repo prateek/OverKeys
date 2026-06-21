@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:isolate';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:overkeys/models/keyboard_layouts.dart';
@@ -22,28 +23,150 @@ class KeyEventService {
   /// ReceivePort for keyboard events
   ReceivePort? _receivePort;
 
+  /// ReceivePort for hook isolate errors
+  ReceivePort? _errorPort;
+
+  StreamSubscription<dynamic>? _receiveSubscription;
+  StreamSubscription<dynamic>? _errorSubscription;
+
+  /// Isolate running the platform keyboard hook
+  Isolate? _hookIsolate;
+
+  SendPort? _hookControlPort;
+  String? _hookPlatform;
+  int? _hookShutdownHandle;
+
   /// Sets up the keyboard event listener
   void setupKeyListener(ReceivePort Function() createReceivePort,
       Function(dynamic) handleKeyEvent) {
-    _receivePort = createReceivePort();
-    Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
-      // Only attach listener after isolate spawn succeeds
-      _receivePort!.listen(handleKeyEvent);
+    final receivePort = createReceivePort();
+    final errorPort = ReceivePort();
+
+    _receivePort = receivePort;
+    _errorPort = errorPort;
+    _hookControlPort = null;
+    _hookPlatform = null;
+    _hookShutdownHandle = null;
+    _receiveSubscription = receivePort.listen((message) {
+      if (_receivePort != receivePort) return;
+      if (_recordHookReady(message)) return;
+      handleKeyEvent(message);
+    });
+    _errorSubscription = errorPort.listen((message) {
+      if (_errorPort != errorPort || message == null) return;
+      _log.error('Keyboard hook isolate error', error: message);
+      handleKeyEvent(['hook_error', 'hook_exception']);
+    });
+
+    Isolate.spawn(
+      startHookIsolate,
+      receivePort.sendPort,
+      onError: errorPort.sendPort,
+      paused: true,
+    ).then((isolate) {
+      if (_receivePort != receivePort) {
+        isolate.kill(priority: Isolate.immediate);
+        return;
+      }
+      _hookIsolate = isolate;
+      isolate.resume(isolate.pauseCapability!);
     }).catchError((error) {
-      // Close the unused port before handling error
-      _receivePort?.close();
-      _receivePort = null;
+      if (_receivePort != receivePort) return;
       _log.error('Error spawning Isolate', error: error);
-      throw error;
+      handleKeyEvent(['hook_error', 'hook_spawn_failed']);
+      _closeHookPorts();
     });
   }
 
   /// Disposes of resources and closes the receive port
   void dispose() {
-    _receivePort?.close();
-    _receivePort = null;
+    final hookIsolate = _hookIsolate;
+    final requestedShutdown = _requestHookShutdown();
+    if (hookIsolate != null) {
+      if (requestedShutdown) {
+        Future<void>.delayed(const Duration(seconds: 1), () {
+          hookIsolate.kill(priority: Isolate.immediate);
+        });
+      } else {
+        hookIsolate.kill(priority: Isolate.immediate);
+      }
+    }
+    _hookIsolate = null;
+    _hookControlPort = null;
+    _hookPlatform = null;
+    _hookShutdownHandle = null;
+    _closeHookPorts();
     _activeTriggers.clear();
     _previousLayerStack.clear();
+  }
+
+  bool _recordHookReady(dynamic message) {
+    if (message is! List || message.isEmpty) {
+      return false;
+    }
+
+    if (message[0] == 'hook_control') {
+      if (message.length >= 2 && message[1] is SendPort) {
+        _hookControlPort = message[1] as SendPort;
+      } else {
+        _log.warning('Received malformed hook_control message: $message');
+      }
+      return true;
+    }
+
+    if (message[0] == 'hook_ready') {
+      if (message.length >= 2 && message[1] is String) {
+        _hookPlatform = message[1] as String;
+        _hookShutdownHandle =
+            message.length >= 3 && message[2] is int ? message[2] as int : null;
+      } else {
+        _log.warning('Received malformed hook_ready message: $message');
+      }
+      return true;
+    }
+
+    return false;
+  }
+
+  bool _requestHookShutdown() {
+    final platform = _hookPlatform;
+    final shutdownHandle = _hookShutdownHandle;
+    final controlPort = _hookControlPort;
+    var requestedShutdown = false;
+
+    try {
+      if (controlPort != null) {
+        controlPort.send('shutdown');
+        requestedShutdown = true;
+      }
+
+      if (platform == 'windows' && shutdownHandle != null) {
+        requestWindowsHookShutdown(shutdownHandle);
+        requestedShutdown = true;
+      } else if (platform != null && platform != 'macos') {
+        _log.warning('Unknown hook platform: $platform');
+      }
+
+      return requestedShutdown;
+    } catch (error, stackTrace) {
+      _log.error(
+        'Error requesting hook shutdown',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
+  }
+
+  void _closeHookPorts() {
+    _receiveSubscription?.cancel();
+    _receiveSubscription = null;
+    _errorSubscription?.cancel();
+    _errorSubscription = null;
+    _receivePort?.close();
+    _receivePort = null;
+    _errorPort?.close();
+    _errorPort = null;
   }
 
   /// Handles keyboard events from the receive port
@@ -53,6 +176,7 @@ class KeyEventService {
     void Function() fadeIn,
     void Function() resetAutoHideTimer,
     void Function() cancelAutoHideTimer,
+    void Function(String reason) showHookError,
   ) {
     try {
       if (message is! List) return;
@@ -67,6 +191,11 @@ class KeyEventService {
       if (message[0] is String) {
         if (message[0] == 'session_unlock') {
           keyboardNotifier.clearKeyPressStates();
+        }
+        if (message[0] == 'hook_error') {
+          final reason = message.length > 1 ? message[1].toString() : 'unknown';
+          _log.warning('Keyboard hook setup failed: $reason');
+          showHookError(reason);
         }
         return;
       }
