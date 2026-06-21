@@ -32,6 +32,7 @@ class KeyEventService {
   /// Isolate running the platform keyboard hook
   Isolate? _hookIsolate;
 
+  SendPort? _hookControlPort;
   String? _hookPlatform;
   int? _hookShutdownHandle;
 
@@ -43,6 +44,7 @@ class KeyEventService {
 
     _receivePort = receivePort;
     _errorPort = errorPort;
+    _hookControlPort = null;
     _hookPlatform = null;
     _hookShutdownHandle = null;
     _receiveSubscription = receivePort.listen((message) {
@@ -60,12 +62,14 @@ class KeyEventService {
       startHookIsolate,
       receivePort.sendPort,
       onError: errorPort.sendPort,
+      paused: true,
     ).then((isolate) {
       if (_receivePort != receivePort) {
         isolate.kill(priority: Isolate.immediate);
         return;
       }
       _hookIsolate = isolate;
+      isolate.resume(isolate.pauseCapability!);
     }).catchError((error) {
       if (_receivePort != receivePort) return;
       _log.error('Error spawning Isolate', error: error);
@@ -88,6 +92,7 @@ class KeyEventService {
       }
     }
     _hookIsolate = null;
+    _hookControlPort = null;
     _hookPlatform = null;
     _hookShutdownHandle = null;
     _closeHookPorts();
@@ -96,37 +101,53 @@ class KeyEventService {
   }
 
   bool _recordHookReady(dynamic message) {
-    if (message is! List || message.isEmpty || message[0] != 'hook_ready') {
+    if (message is! List || message.isEmpty) {
       return false;
     }
 
-    if (message.length < 3 || message[1] is! String || message[2] is! int) {
-      _log.warning('Received malformed hook_ready message: $message');
+    if (message[0] == 'hook_control') {
+      if (message.length >= 2 && message[1] is SendPort) {
+        _hookControlPort = message[1] as SendPort;
+      } else {
+        _log.warning('Received malformed hook_control message: $message');
+      }
       return true;
     }
 
-    _hookPlatform = message[1] as String;
-    _hookShutdownHandle = message[2] as int;
-    return true;
+    if (message[0] == 'hook_ready') {
+      if (message.length >= 2 && message[1] is String) {
+        _hookPlatform = message[1] as String;
+        _hookShutdownHandle =
+            message.length >= 3 && message[2] is int ? message[2] as int : null;
+      } else {
+        _log.warning('Received malformed hook_ready message: $message');
+      }
+      return true;
+    }
+
+    return false;
   }
 
   bool _requestHookShutdown() {
     final platform = _hookPlatform;
     final shutdownHandle = _hookShutdownHandle;
-    if (platform == null || shutdownHandle == null) return false;
+    final controlPort = _hookControlPort;
+    var requestedShutdown = false;
 
     try {
-      switch (platform) {
-        case 'windows':
-          requestWindowsHookShutdown(shutdownHandle);
-          return true;
-        case 'macos':
-          requestMacOSHookShutdown(shutdownHandle);
-          return true;
-        default:
-          _log.warning('Unknown hook platform: $platform');
-          return false;
+      if (controlPort != null) {
+        controlPort.send('shutdown');
+        requestedShutdown = true;
       }
+
+      if (platform == 'windows' && shutdownHandle != null) {
+        requestWindowsHookShutdown(shutdownHandle);
+        requestedShutdown = true;
+      } else if (platform != null && platform != 'macos') {
+        _log.warning('Unknown hook platform: $platform');
+      }
+
+      return requestedShutdown;
     } catch (error, stackTrace) {
       _log.error(
         'Error requesting hook shutdown',

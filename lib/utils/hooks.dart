@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ffi';
@@ -129,8 +130,11 @@ final _cfRunLoopRemoveSource = _coreFoundation.lookupFunction<
       Pointer<Void> mode,
     )>('CFRunLoopRemoveSource');
 
-final _cfRunLoopRun = _coreFoundation
-    .lookupFunction<Void Function(), void Function()>('CFRunLoopRun');
+final _cfRunLoopRunInMode = _coreFoundation.lookupFunction<
+    Int32 Function(
+        Pointer<Void> mode, Double seconds, Uint8 returnAfterSourceHandled),
+    int Function(Pointer<Void> mode, double seconds,
+        int returnAfterSourceHandled)>('CFRunLoopRunInMode');
 
 final _cfRunLoopStop = _coreFoundation.lookupFunction<
     Void Function(Pointer<Void> runLoop),
@@ -144,8 +148,8 @@ final _cfRelease = _coreFoundation.lookupFunction<
     Void Function(Pointer<Void> cf),
     void Function(Pointer<Void> cf)>('CFRelease');
 
-Pointer<Void> get _cfRunLoopCommonModes =>
-    _coreFoundation.lookup<Pointer<Void>>('kCFRunLoopCommonModes').value;
+Pointer<Void> get _cfRunLoopDefaultMode =>
+    _coreFoundation.lookup<Pointer<Void>>('kCFRunLoopDefaultMode').value;
 
 const int _kCGSessionEventTap = 1;
 const int _kCGHeadInsertEventTap = 0;
@@ -156,6 +160,9 @@ const int _kCGEventFlagsChanged = 12;
 const int _kCGEventTapDisabledByTimeout = 0xFFFFFFFE;
 const int _kCGEventTapDisabledByUserInput = 0xFFFFFFFF;
 const int _kCGKeyboardEventKeycode = 9;
+const int _kCFRunLoopRunFinished = 1;
+
+bool _hookShutdownRequested = false;
 
 int lowLevelKeyboardProc(
   int nCode,
@@ -244,7 +251,7 @@ int createSessionNotificationWindow() {
   }
 }
 
-void setHook(SendPort port) {
+Future<void> setHook(SendPort port) async {
   sendPort = port;
 
   if (Platform.isWindows) {
@@ -253,7 +260,7 @@ void setHook(SendPort port) {
   }
 
   if (Platform.isMacOS) {
-    _setMacOSHook();
+    await _setMacOSHook();
     return;
   }
 
@@ -263,8 +270,22 @@ void setHook(SendPort port) {
 }
 
 void startHookIsolate(SendPort port) {
+  unawaited(_startHookIsolate(port));
+}
+
+Future<void> _startHookIsolate(SendPort port) async {
+  _hookShutdownRequested = false;
+  final controlPort = ReceivePort();
+  controlPort.listen((message) {
+    if (message == 'shutdown') {
+      _hookShutdownRequested = true;
+      unhook();
+    }
+  });
+  port.send(['hook_control', controlPort.sendPort]);
+
   try {
-    setHook(port);
+    await setHook(port);
   } catch (error, stackTrace) {
     _log.error(
       'Unhandled keyboard hook setup error',
@@ -272,6 +293,8 @@ void startHookIsolate(SendPort port) {
       stackTrace: stackTrace,
     );
     port.send(['hook_error', 'hook_exception']);
+  } finally {
+    controlPort.close();
   }
 }
 
@@ -286,26 +309,29 @@ void _setWindowsHook() {
   }
   hookId = currentHookId;
 
-  // Set up session notification window
-  final currentSessionWindowHandle = createSessionNotificationWindow();
-  sessionWindowHandle = currentSessionWindowHandle;
-  registerSessionNotification(currentSessionWindowHandle);
-  sendPort?.send(['hook_ready', 'windows', GetCurrentThreadId()]);
-
-  final msg = calloc<MSG>();
   try {
-    while (GetMessage(msg, NULL, 0, 0) != 0) {
-      TranslateMessage(msg);
-      DispatchMessage(msg);
-      sendPort?.send(msg);
+    // Set up session notification window
+    final currentSessionWindowHandle = createSessionNotificationWindow();
+    sessionWindowHandle = currentSessionWindowHandle;
+    registerSessionNotification(currentSessionWindowHandle);
+    sendPort?.send(['hook_ready', 'windows', GetCurrentThreadId()]);
+
+    final msg = calloc<MSG>();
+    try {
+      while (GetMessage(msg, NULL, 0, 0) != 0) {
+        TranslateMessage(msg);
+        DispatchMessage(msg);
+        sendPort?.send(msg);
+      }
+    } finally {
+      calloc.free(msg);
     }
   } finally {
-    calloc.free(msg);
     unhook();
   }
 }
 
-void _setMacOSHook() {
+Future<void> _setMacOSHook() async {
   if (!_ensureMacOSInputMonitoringAccess()) {
     _log.warning('Input Monitoring permission is required for OverKeys to '
         'listen to global key events on macOS.');
@@ -345,12 +371,18 @@ void _setMacOSHook() {
 
   _macRunLoop = _cfRunLoopGetCurrent();
   final runLoop = _macRunLoop!;
-  _cfRunLoopAddSource(runLoop, runLoopSource, _cfRunLoopCommonModes);
+  _cfRunLoopAddSource(runLoop, runLoopSource, _cfRunLoopDefaultMode);
   _cgEventTapEnable(eventTap, true);
-  sendPort?.send(['hook_ready', 'macos', runLoop.address]);
+  sendPort?.send(['hook_ready', 'macos']);
 
   try {
-    _cfRunLoopRun();
+    while (!_hookShutdownRequested) {
+      final result = _cfRunLoopRunInMode(_cfRunLoopDefaultMode, 0.1, 0);
+      if (result == _kCFRunLoopRunFinished) {
+        break;
+      }
+      await Future<void>.delayed(Duration.zero);
+    }
   } finally {
     _disposeMacOSHookResources(runLoop, runLoopSource, eventTap);
   }
@@ -362,7 +394,7 @@ void _disposeMacOSHookResources(
   Pointer<Void> eventTap,
 ) {
   _cgEventTapEnable(eventTap, false);
-  _cfRunLoopRemoveSource(runLoop, runLoopSource, _cfRunLoopCommonModes);
+  _cfRunLoopRemoveSource(runLoop, runLoopSource, _cfRunLoopDefaultMode);
   _cfMachPortInvalidate(eventTap);
   _cfRelease(runLoopSource);
   _cfRelease(eventTap);
@@ -441,6 +473,7 @@ void unhook() {
     final currentHookId = hookId;
     if (currentHookId != null) {
       UnhookWindowsHookEx(currentHookId);
+      hookId = null;
     }
 
     final currentSessionWindowHandle = sessionWindowHandle;
@@ -449,6 +482,7 @@ void unhook() {
       DestroyWindow(currentSessionWindowHandle);
       UnregisterClass(
           TEXT('SessionNotificationWindow'), GetModuleHandle(nullptr));
+      sessionWindowHandle = null;
     }
     return;
   }
@@ -469,11 +503,5 @@ void unhook() {
 void requestWindowsHookShutdown(int threadId) {
   if (Platform.isWindows) {
     PostThreadMessage(threadId, WM_QUIT, 0, 0);
-  }
-}
-
-void requestMacOSHookShutdown(int runLoopAddress) {
-  if (Platform.isMacOS && runLoopAddress != 0) {
-    _cfRunLoopStop(Pointer<Void>.fromAddress(runLoopAddress));
   }
 }
