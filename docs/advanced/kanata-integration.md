@@ -33,7 +33,7 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
    ```
 
 7. Save the file
-8. Toggle the **Connect to Kanata** option off then on again to apply changes
+8. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ### Configuring Kanata
 
