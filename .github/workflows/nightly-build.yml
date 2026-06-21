@@ -70,8 +70,8 @@ jobs:
   build-nightly:
     needs: detect-nightly-trigger
     if: |
-      always() && 
-      (github.event_name == 'workflow_dispatch' || 
+      always() &&
+      (github.event_name == 'workflow_dispatch' ||
        needs.detect-nightly-trigger.outputs.should_run_nightly == 'true')
     runs-on: windows-latest
     timeout-minutes: 30
@@ -112,6 +112,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
+          flutter-version: "3.44.2"
           cache: true
 
       - name: Install InnoSetup

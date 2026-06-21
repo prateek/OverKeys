@@ -18,7 +18,7 @@ There are many ways you can contribute to OverKeys:
 
 Before you begin, ensure you have the following installed:
 
-- [Flutter](https://flutter.dev/docs/get-started/install) (latest stable version)
+- [Flutter](https://flutter.dev/docs/get-started/install) 3.44.2
 - [Git](https://git-scm.com/downloads)
 
 ### Development Setup

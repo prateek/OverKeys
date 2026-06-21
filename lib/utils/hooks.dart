@@ -117,8 +117,28 @@ final _cfRunLoopAddSource = _coreFoundation.lookupFunction<
 final _cfRunLoopGetCurrent = _coreFoundation.lookupFunction<
     Pointer<Void> Function(), Pointer<Void> Function()>('CFRunLoopGetCurrent');
 
+final _cfRunLoopRemoveSource = _coreFoundation.lookupFunction<
+    Void Function(
+      Pointer<Void> runLoop,
+      Pointer<Void> source,
+      Pointer<Void> mode,
+    ),
+    void Function(
+      Pointer<Void> runLoop,
+      Pointer<Void> source,
+      Pointer<Void> mode,
+    )>('CFRunLoopRemoveSource');
+
 final _cfRunLoopRun = _coreFoundation
     .lookupFunction<Void Function(), void Function()>('CFRunLoopRun');
+
+final _cfRunLoopStop = _coreFoundation.lookupFunction<
+    Void Function(Pointer<Void> runLoop),
+    void Function(Pointer<Void> runLoop)>('CFRunLoopStop');
+
+final _cfMachPortInvalidate = _coreFoundation.lookupFunction<
+    Void Function(Pointer<Void> port),
+    void Function(Pointer<Void> port)>('CFMachPortInvalidate');
 
 final _cfRelease = _coreFoundation.lookupFunction<
     Void Function(Pointer<Void> cf),
@@ -182,8 +202,7 @@ int sessionNotificationProc(int hwnd, int message, int wParam, int lParam) {
 void registerSessionNotification(int hwnd) {
   final result = WTSRegisterSessionNotification(hwnd, NOTIFY_FOR_THIS_SESSION);
   if (result == 0) {
-    _log.error('Failed to register session notification');
-    exit(1);
+    throw StateError('Failed to register session notification.');
   }
 }
 
@@ -215,8 +234,8 @@ int createSessionNotificationWindow() {
     );
 
     if (hwnd == 0) {
-      _log.error('Failed to create notification window: ${GetLastError()}');
-      exit(1);
+      throw StateError(
+          'Failed to create notification window: ${GetLastError()}');
     }
 
     return hwnd;
@@ -243,13 +262,27 @@ void setHook(SendPort port) {
   sendPort?.send(['hook_error', 'unsupported_platform']);
 }
 
+void startHookIsolate(SendPort port) {
+  try {
+    setHook(port);
+  } catch (error, stackTrace) {
+    _log.error(
+      'Unhandled keyboard hook setup error',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    port.send(['hook_error', 'hook_exception']);
+  }
+}
+
 void _setWindowsHook() {
   // Set up keyboard hook
   final currentHookId = SetWindowsHookEx(
       WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(nullptr), 0);
   if (currentHookId == 0) {
     _log.error('Failed to install hook.');
-    exit(1);
+    sendPort?.send(['hook_error', 'windows_hook_unavailable']);
+    return;
   }
   hookId = currentHookId;
 
@@ -257,6 +290,7 @@ void _setWindowsHook() {
   final currentSessionWindowHandle = createSessionNotificationWindow();
   sessionWindowHandle = currentSessionWindowHandle;
   registerSessionNotification(currentSessionWindowHandle);
+  sendPort?.send(['hook_ready', 'windows', GetCurrentThreadId()]);
 
   final msg = calloc<MSG>();
   try {
@@ -267,6 +301,7 @@ void _setWindowsHook() {
     }
   } finally {
     calloc.free(msg);
+    unhook();
   }
 }
 
@@ -309,10 +344,26 @@ void _setMacOSHook() {
   }
 
   _macRunLoop = _cfRunLoopGetCurrent();
-  _cfRunLoopAddSource(_macRunLoop!, runLoopSource, _cfRunLoopCommonModes);
+  final runLoop = _macRunLoop!;
+  _cfRunLoopAddSource(runLoop, runLoopSource, _cfRunLoopCommonModes);
   _cgEventTapEnable(eventTap, true);
-  _cfRunLoopRun();
+  sendPort?.send(['hook_ready', 'macos', runLoop.address]);
 
+  try {
+    _cfRunLoopRun();
+  } finally {
+    _disposeMacOSHookResources(runLoop, runLoopSource, eventTap);
+  }
+}
+
+void _disposeMacOSHookResources(
+  Pointer<Void> runLoop,
+  Pointer<Void> runLoopSource,
+  Pointer<Void> eventTap,
+) {
+  _cgEventTapEnable(eventTap, false);
+  _cfRunLoopRemoveSource(runLoop, runLoopSource, _cfRunLoopCommonModes);
+  _cfMachPortInvalidate(eventTap);
   _cfRelease(runLoopSource);
   _cfRelease(eventTap);
   _macRunLoopSource = null;
@@ -407,5 +458,22 @@ void unhook() {
     if (eventTap != null && eventTap != nullptr) {
       _cgEventTapEnable(eventTap, false);
     }
+
+    final runLoop = _macRunLoop;
+    if (runLoop != null && runLoop != nullptr) {
+      _cfRunLoopStop(runLoop);
+    }
+  }
+}
+
+void requestWindowsHookShutdown(int threadId) {
+  if (Platform.isWindows) {
+    PostThreadMessage(threadId, WM_QUIT, 0, 0);
+  }
+}
+
+void requestMacOSHookShutdown(int runLoopAddress) {
+  if (Platform.isMacOS && runLoopAddress != 0) {
+    _cfRunLoopStop(Pointer<Void>.fromAddress(runLoopAddress));
   }
 }

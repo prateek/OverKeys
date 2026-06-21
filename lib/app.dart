@@ -210,7 +210,13 @@ class _MainAppState extends ConsumerState<MainApp>
   String _hookErrorMessage(String reason) {
     switch (reason) {
       case 'input_monitoring_permission':
-        return 'Grant Input Monitoring\nand reopen';
+        return 'Grant Input Monitoring\nthen reopen OverKeys';
+      case 'event_tap_unavailable':
+      case 'event_tap_run_loop_unavailable':
+        return 'Check Input Monitoring\nthen reopen OverKeys';
+      case 'hook_exception':
+      case 'hook_spawn_failed':
+        return 'Keyboard listener failed\nreopen OverKeys';
       case 'unsupported_platform':
         return 'Keyboard hook unsupported';
       default:
