@@ -44,3 +44,26 @@ jobs:
 
       - name: Run tests
         run: flutter test
+
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: "3.41.9"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      # Compiles the Dart app and the macOS Runner (Swift) so plugin-registration
+      # and native build regressions are caught in CI.
+      - name: Build macOS app
+        run: flutter build macos --debug

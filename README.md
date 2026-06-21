@@ -228,7 +228,7 @@ Contributions are what make the open-source community such an amazing place to l
 
 ## Building from Source
 
-OverKeys is a [Flutter](https://flutter.dev/) desktop app. The repo pins a Flutter version in `.fvmrc`; [fvm](https://fvm.app/) is the easiest way to match it.
+OverKeys is a [Flutter](https://flutter.dev/) desktop app. The repo pins a Flutter version in `.fvmrc` (currently **3.41.9**); [fvm](https://fvm.app/) is the easiest way to match it. The pin is required because `lucide_icons` doesn't build on Flutter 3.44+ yet — see the comment in `pubspec.yaml`.
 
 ```sh
 flutter pub get
@@ -238,9 +238,12 @@ flutter build macos     # on macOS
 
 ### macOS notes
 
+macOS isn't published as a prebuilt release yet — build it from source as above.
+
 - **Permissions.** Global key capture uses a system event tap, so macOS requires you to grant OverKeys **Accessibility** (and, on first run, **Input Monitoring**) under *System Settings → Privacy & Security*. Until you do, the overlay shows but keys never light up.
-- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't observe global key events or open the Kanata TCP socket. It ships outside the Mac App Store, the same as the Windows build.
+- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't observe global key events or open the Kanata TCP socket, so it's distributed outside the Mac App Store (like the Windows build).
 - **Menu-bar app.** OverKeys runs as an agent app (no Dock icon) and is controlled from its menu-bar tray icon, mirroring the Windows tray behavior.
+- **Launch at startup** requires macOS 13 or later (it's backed by `SMAppService`).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 

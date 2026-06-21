@@ -55,8 +55,65 @@ void main() {
       expect(resolve(PhysicalKeyboardKey.controlRight), 'RControl');
       expect(resolve(PhysicalKeyboardKey.altLeft), 'LAlt');
       expect(resolve(PhysicalKeyboardKey.altRight), 'RAlt');
-      // metaLeft maps to the 'Win' key name used across layouts/aliases.
+      // metaLeft/metaRight map to the 'Win'/'RWin' names used across
+      // layouts and the custom-alias logic.
       expect(resolve(PhysicalKeyboardKey.metaLeft), 'Win');
+      expect(resolve(PhysicalKeyboardKey.metaRight), 'RWin');
+    });
+
+    test('numpad keys share state with their digit/operator names', () {
+      expect(resolve(PhysicalKeyboardKey.numpad0), '0');
+      expect(resolve(PhysicalKeyboardKey.numpad9), '9');
+      expect(resolve(PhysicalKeyboardKey.numpadAdd), '+');
+      expect(resolve(PhysicalKeyboardKey.numpadSubtract), '-');
+      expect(resolve(PhysicalKeyboardKey.numpadMultiply), '*');
+      expect(resolve(PhysicalKeyboardKey.numpadDivide), '/');
+      expect(resolve(PhysicalKeyboardKey.numpadDecimal), '.');
+      // Both Enter keys resolve to 'Enter', matching Windows.
+      expect(resolve(PhysicalKeyboardKey.numpadEnter), 'Enter');
+    });
+
+    test('high function keys and lock keys resolve', () {
+      expect(resolve(PhysicalKeyboardKey.f13), 'F13');
+      expect(resolve(PhysicalKeyboardKey.f24), 'F24');
+      expect(resolve(PhysicalKeyboardKey.numLock), 'NumLock');
+      expect(resolve(PhysicalKeyboardKey.scrollLock), 'ScrollLock');
+    });
+
+    test('media keys resolve to their names', () {
+      expect(resolve(PhysicalKeyboardKey.audioVolumeMute), 'Mute');
+      expect(resolve(PhysicalKeyboardKey.audioVolumeUp), 'VolumeUp');
+      expect(resolve(PhysicalKeyboardKey.mediaTrackNext), 'NextTrack');
+      expect(resolve(PhysicalKeyboardKey.mediaPlayPause), 'PlayPause');
+    });
+  });
+
+  group('keyEventMessages (Windows-hook parity)', () {
+    test('key-down emits a single primary message', () {
+      final vk = virtualKeyForPhysicalKey(PhysicalKeyboardKey.keyA)!;
+      expect(
+        keyEventMessages(PhysicalKeyboardKey.keyA, true, false),
+        [
+          [vk, true, false]
+        ],
+      );
+    });
+
+    test('key-up also emits the opposite-shift release', () {
+      // Mirrors lib/utils/hooks.dart: on release, clear both shift variants so
+      // a shifted symbol does not stay highlighted.
+      final vk = virtualKeyForPhysicalKey(PhysicalKeyboardKey.digit1)!;
+      expect(
+        keyEventMessages(PhysicalKeyboardKey.digit1, false, true),
+        [
+          [vk, false, true],
+          [vk, false, false],
+        ],
+      );
+    });
+
+    test('unmapped keys emit nothing', () {
+      expect(keyEventMessages(PhysicalKeyboardKey.fn, true, false), isEmpty);
     });
 
     test('special and navigation keys resolve correctly', () {

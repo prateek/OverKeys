@@ -61,21 +61,26 @@ class MacKeyListener {
   }
 
   void _onKeyEvent(RawKeyEvent event) {
-    final vkCode = virtualKeyForPhysicalKey(event.physicalKey);
-    if (vkCode == null) return;
-
-    final isPressed = event is RawKeyDownEvent;
-    final isShiftDown = event.isShiftPressed;
-
-    _sendPort.send([vkCode, isPressed, isShiftDown]);
-
-    // Mirror the Windows hook: on release, also clear the opposite shift
-    // variant so a symbol typed with Shift held (e.g. '{') does not stay
-    // highlighted after both keys are released.
-    if (!isPressed) {
-      _sendPort.send([vkCode, false, !isShiftDown]);
+    for (final message in keyEventMessages(
+        event.physicalKey, event is RawKeyDownEvent, event.isShiftPressed)) {
+      _sendPort.send(message);
     }
   }
+}
+
+/// Builds the `[vkCode, isPressed, isShiftDown]` messages for a physical key,
+/// mirroring the Windows hook's output (see lib/utils/hooks.dart): a primary
+/// message, plus an opposite-shift release on key-up so a symbol typed with
+/// Shift held (e.g. '{') does not stay highlighted after both keys are
+/// released. Returns an empty list for keys with no virtual-key mapping.
+List<List<Object>> keyEventMessages(
+    PhysicalKeyboardKey physicalKey, bool isPressed, bool isShiftDown) {
+  final vkCode = virtualKeyForPhysicalKey(physicalKey);
+  if (vkCode == null) return const [];
+  return [
+    [vkCode, isPressed, isShiftDown],
+    if (!isPressed) [vkCode, false, !isShiftDown],
+  ];
 }
 
 /// Returns the Windows virtual-key code OverKeys uses for [key], or null if the

@@ -35,8 +35,13 @@ class KeyEventService {
   /// they come from an hid_listener event tap relayed through the same port.
   void setupKeyListener(ReceivePort Function() createReceivePort,
       Function(dynamic) handleKeyEvent) {
+    if (!Platform.isWindows && !Platform.isMacOS) {
+      _log.error('Keyboard listener is not supported on this platform');
+      return;
+    }
+
+    _receivePort = createReceivePort();
     if (Platform.isWindows) {
-      _receivePort = createReceivePort();
       Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
         // Only attach listener after isolate spawn succeeds
         _receivePort!.listen(handleKeyEvent);
@@ -47,15 +52,12 @@ class KeyEventService {
         _log.error('Error spawning Isolate', error: error);
         throw error;
       });
-    } else if (Platform.isMacOS) {
-      _receivePort = createReceivePort();
+    } else {
       _receivePort!.listen(handleKeyEvent);
       _macKeyListener = MacKeyListener(_receivePort!.sendPort);
       if (!_macKeyListener!.start()) {
         _log.error('Failed to start macOS keyboard listener');
       }
-    } else {
-      _log.error('Keyboard listener is not supported on this platform');
     }
   }
 
