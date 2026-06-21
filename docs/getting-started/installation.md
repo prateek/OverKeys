@@ -5,9 +5,9 @@ from source.
 
 ## Methods
 
-### 1. Using Winget (Recommended)
+### 1. Using Winget (Recommended for Windows)
 
-The recommended installation method is using Windows Package Manager (winget), as it enables automatic updates:
+Use Windows Package Manager (winget) to get automatic updates:
 
 ```powershell
 winget install AngeloConvento.OverKeys
@@ -31,7 +31,7 @@ For a portable version without installation:
 
 ### 4. Building the macOS App Bundle
 
-Build the macOS app from source:
+Build the macOS app from source with Flutter 3.44.2:
 
 ```bash
 flutter pub get
@@ -47,7 +47,8 @@ open build/macos/Build/Products/Release/OverKeys.app
 ```
 
 On first launch, macOS prompts for Input Monitoring permission so OverKeys can
-listen for global key events.
+listen for global key events. If you grant permission after OverKeys is already
+running, quit and reopen it.
 
 ## First Launch
 
@@ -67,6 +68,10 @@ To update OverKeys when installed via winget:
 winget upgrade AngeloConvento.OverKeys
 ```
 
-### For Manual Installations
+### For Windows Installer or ZIP Installations
 
-Download and run the latest installer from the [GitHub releases page](https://github.com/conventoangelo/OverKeys/releases).
+Download the latest installer or ZIP from the [GitHub releases page](https://github.com/conventoangelo/OverKeys/releases).
+
+### For macOS Source Builds
+
+Pull the latest source, then rebuild the app bundle.

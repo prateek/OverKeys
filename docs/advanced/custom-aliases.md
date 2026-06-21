@@ -42,7 +42,7 @@ You can use the following modifiers in your key combinations:
 - `Control` (matches both Left and Right Control)
 - `Shift` (matches both Left and Right Shift)
 - `Alt` (matches both Left and Right Alt)
-- `Win` (matches either Windows key or either macOS Command key)
+- `Win` (matches either Windows key or Command key on macOS)
 
 You can also specify specific sides if needed (e.g., `LControl`, `RShift`), but the generic modifiers are usually more convenient.
 

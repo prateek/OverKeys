@@ -202,14 +202,15 @@ Always test:
 
 ## Current Test Coverage
 
-| Category  | Files  | Tests   | Notes                                        |
-| --------- | ------ | ------- | -------------------------------------------- |
-| Models    | 3      | 39      | Full coverage of data models                 |
-| Utils     | 3      | 53      | Key codes, fonts, and themes                 |
-| Providers | 3      | 63      | All three state providers covered            |
-| Services  | 4      | 67      | State, config, Kanata, startup               |
-| Widgets   | 6      | 57      | Options widgets and overlays                 |
-| **Total** | **19** | **279** | Comprehensive coverage of core functionality |
+| Category  | Files  | Tests   | Notes                                      |
+| --------- | ------ | ------- | ------------------------------------------ |
+| Models    | 3      | 36      | Data models                                |
+| Utils     | 4      | 87      | Key codes, fonts, logging, and themes      |
+| Providers | 3      | 63      | State providers                            |
+| Services  | 4      | 67      | State, config, Kanata, startup             |
+| Widgets   | 6      | 57      | Options widgets and overlays               |
+| Root      | 1      | 3       | Additional UserConfig ignored-key coverage |
+| **Total** | **21** | **313** | Matches the current `flutter test` run     |
 
 ### 4. Service Tests (`test/services/`)
 
