@@ -201,12 +201,10 @@ class AdvancedTab extends ConsumerWidget {
                 final configPath = await configService.configPath;
                 final file = File(configPath);
 
-                if (await file.exists()) {
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
-                } else {
+                if (!await file.exists()) {
                   await configService.saveConfig(UserConfig());
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
                 }
+                await _openInDefaultApp(configPath);
               } catch (e) {
                 debugPrint('Error opening config file: $e');
               }
@@ -215,5 +213,16 @@ class AdvancedTab extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Opens [path] with the operating system's default handler.
+Future<void> _openInDefaultApp(String path) async {
+  if (Platform.isWindows) {
+    await Process.start('cmd', ['/c', 'start', '', path]);
+  } else if (Platform.isMacOS) {
+    await Process.start('open', [path]);
+  } else {
+    await Process.start('xdg-open', [path]);
   }
 }

@@ -22,7 +22,7 @@
     </a>
   </p>
 
-  <h3 align="center">An open-source keyboard layout visualizer for Windows</h3>
+  <h3 align="center">An open-source keyboard layout visualizer for Windows and macOS</h3>
 
   <p align="center">
     <a href="#getting-started">Install Now</a>
@@ -226,6 +226,24 @@ Contributions are what make the open-source community such an amazing place to l
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Building from Source
+
+OverKeys is a [Flutter](https://flutter.dev/) desktop app. The repo pins a Flutter version in `.fvmrc`; [fvm](https://fvm.app/) is the easiest way to match it.
+
+```sh
+flutter pub get
+flutter build windows   # on Windows
+flutter build macos     # on macOS
+```
+
+### macOS notes
+
+- **Permissions.** Global key capture uses a system event tap, so macOS requires you to grant OverKeys **Accessibility** (and, on first run, **Input Monitoring**) under *System Settings → Privacy & Security*. Until you do, the overlay shows but keys never light up.
+- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't observe global key events or open the Kanata TCP socket. It ships outside the Mac App Store, the same as the Windows build.
+- **Menu-bar app.** OverKeys runs as an agent app (no Dock icon) and is controlled from its menu-bar tray icon, mirroring the Windows tray behavior.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## License
 
 Distributed under the GPL-3.0 License. See [`LICENSE`](LICENSE) file for more information.
@@ -262,6 +280,7 @@ If you'd like to support the development of OverKeys, I accept contributions thr
 - [win32](https://win32.pub/) - Enable direct Win32 API access from Dart using FFI without requiring C code
 - [leanflutter.dev](https://leanflutter.dev/our-packages/) - Provider of several essential Flutter desktop packages used in this project
 - [desktop_multi_window](https://pub.dev/packages/desktop_multi_window) - Flutter plugin for creating and managing multiple windows in desktop applications
+- [hid_listener](https://pub.dev/packages/hid_listener) - Cross-platform global keyboard listener used to capture key events on macOS
 - [flex_color_picker](https://github.com/rydmike/flex_color_picker) - Highly customizable and versatile color picker for Flutter applications
 - Alaine - for creating the beautiful OverKeys logo with love and care.
 

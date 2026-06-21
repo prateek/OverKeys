@@ -105,7 +105,10 @@ Future<void> _initPreferencesWindow(WindowController windowController) async {
 
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.setTitle("Preferences");
-    await windowManager.setIcon("assets/images/app_icon.ico");
+    // Window icons are a Windows concept; macOS uses the app bundle icon.
+    if (Platform.isWindows) {
+      await windowManager.setIcon("assets/images/app_icon.ico");
+    }
     await windowManager.center();
     await windowManager.setMinimumSize(const Size(828, 621));
     await windowManager.focus();
