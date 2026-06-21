@@ -85,7 +85,7 @@ To edit your configuration file:
 
 1. Open OverKeys Preferences
 2. Navigate to the **Advanced** tab
-3. Click **Open config file**
+3. Click **Open** in the **Open config file** row
 4. Add or modify the `ignoredKeys` array
 5. Save the file
 6. Restart OverKeys for changes to take effect

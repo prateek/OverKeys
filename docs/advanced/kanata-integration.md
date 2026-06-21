@@ -18,8 +18,8 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
 
 1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
-3. Go to the **General** tab
-4. Click **Open Config** to edit the configuration file
+3. Go to the **Advanced** tab
+4. Click **Open** in the **Open config file** row to edit the configuration file
 5. Modify the `overkeys_config.json` file:
 
    ```json

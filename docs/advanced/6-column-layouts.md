@@ -25,7 +25,7 @@ The 6-column layout feature in OverKeys allows you to visualize 6-column split m
 1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open config file**
+4. Click **Open** in the **Open config file** row
 5. In the JSON file, edit the `userLayouts` array and set the `defaultUserLayout` field:
 
     ```jsonc

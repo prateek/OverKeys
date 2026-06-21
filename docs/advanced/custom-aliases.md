@@ -8,7 +8,7 @@ OverKeys allows you to define custom aliases for key combinations. This is usefu
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
-5. Click the **Open Config** button
+5. Click **Open** in the **Open config file** row
 6. In the JSON file, add or modify the `customAliases` field to match your desired aliases
 
    ```jsonc

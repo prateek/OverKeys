@@ -23,7 +23,7 @@ The custom layout feature in OverKeys allows you to use your own keyboard layout
 1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open Config**
+4. Click **Open** in the **Open config file** row
 5. In the JSON file, edit the `userLayouts` array and set the `defaultUserLayout` field:
 
    ```json
