@@ -201,12 +201,11 @@ class AdvancedTab extends ConsumerWidget {
                 final configPath = await configService.configPath;
                 final file = File(configPath);
 
-                if (await file.exists()) {
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
-                } else {
+                if (!await file.exists()) {
                   await configService.saveConfig(UserConfig());
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
                 }
+
+                await _openConfigFile(configPath);
               } catch (e) {
                 debugPrint('Error opening config file: $e');
               }
@@ -215,5 +214,17 @@ class AdvancedTab extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openConfigFile(String configPath) {
+    if (Platform.isWindows) {
+      return Process.start('cmd.exe', ['/c', 'start', '', configPath]);
+    }
+
+    if (Platform.isMacOS) {
+      return Process.start('open', [configPath]);
+    }
+
+    return Process.start('xdg-open', [configPath]);
   }
 }
