@@ -32,10 +32,11 @@ Right-clicking the tray or menu bar icon opens a context menu with the following
 
 By default, OverKeys comes with the following keyboard shortcuts:
 
-- **Ctrl+Alt+Q**: Toggles the visibility of the keyboard
+- **Ctrl+Alt+Q**: Toggles keyboard visibility
 - **Ctrl+Alt+W**: Toggles Auto Hide mode
-- **Ctrl+Alt+E**: Toggles Move mode for repositioning the keyboard
-- **Ctrl+Alt+R**: Opens the Preferences window
+- **Ctrl+Alt+E**: Toggles Move mode
+- **Ctrl+Alt+R**: Toggles the top row
+- **Ctrl+Alt+T**: Opens the Preferences window
 - **Ctrl+Alt+Up**: Increases keyboard opacity
 - **Ctrl+Alt+Down**: Decreases keyboard opacity
 

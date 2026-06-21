@@ -13,7 +13,7 @@ Use Windows Package Manager (winget) to get automatic updates:
 winget install AngeloConvento.OverKeys
 ```
 
-### 2. Using EXE Installer
+### 2. Using the Windows EXE Installer
 
 If you prefer manual installation:
 
@@ -21,7 +21,7 @@ If you prefer manual installation:
 2. Run the installer and follow the on-screen instructions
 3. Launch OverKeys after installation
 
-### 3. Using ZIP file
+### 3. Using the Windows ZIP File
 
 For a portable version without installation:
 

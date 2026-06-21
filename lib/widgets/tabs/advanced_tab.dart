@@ -169,7 +169,7 @@ class AdvancedTab extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                         fontSize: 16)),
                 Text(
-                  'Use Reload config from the tray or menu bar to apply changes.',
+                  'Use Reload Config from the tray or menu bar to apply changes.',
                   style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(153),
                       fontSize: 14.0),

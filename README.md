@@ -44,9 +44,9 @@
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#documentation">Documentation</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#supporting">Supporting</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
+    <li><a href="#supporting">Supporting</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -180,11 +180,11 @@ source.
 
    <sub>Note: If `winget` does not offer the latest release yet, use the [installer](https://github.com/conventoangelo/OverKeys/releases/latest).</sub>
 
-2. **Using the Installer**
+2. **Using the Windows Installer**
 
    - Download and run the latest [EXE installer](https://github.com/conventoangelo/OverKeys/releases/latest).
 
-3. **Portable Version**
+3. **Windows Portable ZIP**
    - Download and extract the [portable ZIP file](https://github.com/conventoangelo/OverKeys/releases/latest)
 
 4. **macOS App Bundle**

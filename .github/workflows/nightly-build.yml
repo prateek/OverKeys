@@ -58,7 +58,7 @@ jobs:
           fi
 
           # Only run nightly if last commit is feat or fix AND was pushed within last 24 hours
-          if [[ $HOURS_SINCE_COMMIT -le 24 && ( $COMMIT_MSG == feat:* || $COMMIT_MSG == fix:* ) ]]; then
+          if [[ $HOURS_SINCE_COMMIT -le 24 && $COMMIT_TYPE != "other" ]]; then
             echo "should_run_nightly=true" >> "$GITHUB_OUTPUT"
             echo "commit_type=$COMMIT_TYPE" >> "$GITHUB_OUTPUT"
           else
