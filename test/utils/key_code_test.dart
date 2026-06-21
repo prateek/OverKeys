@@ -198,15 +198,68 @@ void main() {
         expect(normalizeMacOSKeyCode(126), VK_UP);
       });
 
-      test('leaves unknown macOS key codes unchanged', () {
-        expect(normalizeMacOSKeyCode(999), 999);
+      test('normalizes media and keypad keys without colliding with letters',
+          () {
+        expect(normalizeMacOSKeyCode(72), VK_VOLUME_UP);
+        expect(normalizeMacOSKeyCode(73), VK_VOLUME_DOWN);
+        expect(normalizeMacOSKeyCode(74), VK_VOLUME_MUTE);
+        expect(normalizeMacOSKeyCode(81), VK_OEM_PLUS);
+      });
+
+      test('returns null for unknown macOS key codes', () {
+        expect(normalizeMacOSKeyCode(93), isNull);
+        expect(normalizeMacOSKeyCode(999), isNull);
       });
 
       test('normalized key codes use existing shifted mappings', () {
-        final normalizedKeyCode = normalizeMacOSKeyCode(18);
+        final normalizedKeyCode = normalizeMacOSKeyCode(18)!;
 
         expect(getKeyFromKeyCodeShift(normalizedKeyCode, false), '1');
         expect(getKeyFromKeyCodeShift(normalizedKeyCode, true), '!');
+      });
+    });
+
+    group('MacOSModifierStateTracker', () {
+      test('tracks left and right shift independently', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(
+          tracker.updateForFlagsChanged(56, macOSCGEventFlagMaskShift),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(60, macOSCGEventFlagMaskShift),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(56, macOSCGEventFlagMaskShift),
+          isFalse,
+        );
+        expect(tracker.updateForFlagsChanged(60, 0), isFalse);
+      });
+
+      test('tracks left and right command independently', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(
+          tracker.updateForFlagsChanged(55, macOSCGEventFlagMaskCommand),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(54, macOSCGEventFlagMaskCommand),
+          isTrue,
+        );
+        expect(
+          tracker.updateForFlagsChanged(55, macOSCGEventFlagMaskCommand),
+          isFalse,
+        );
+        expect(tracker.updateForFlagsChanged(54, 0), isFalse);
+      });
+
+      test('ignores flagsChanged events for non-modifier keys', () {
+        final tracker = MacOSModifierStateTracker();
+
+        expect(tracker.updateForFlagsChanged(0, 0), isNull);
       });
     });
 

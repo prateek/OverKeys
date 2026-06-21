@@ -179,6 +179,12 @@ Map<(int, bool), String> defaultKeyCodeShiftMap = {
 Map<(int, bool), String> activeKeyCodeShiftMap =
     Map<(int, bool), String>.from(defaultKeyCodeShiftMap);
 
+const int macOSCGEventFlagMaskAlphaShift = 0x00010000;
+const int macOSCGEventFlagMaskShift = 0x00020000;
+const int macOSCGEventFlagMaskControl = 0x00040000;
+const int macOSCGEventFlagMaskAlternate = 0x00080000;
+const int macOSCGEventFlagMaskCommand = 0x00100000;
+
 /// Maps macOS hardware key codes from CGEvent taps to Windows virtual key codes.
 ///
 /// OverKeys stores key mappings as Windows virtual key codes, so the macOS hook
@@ -250,11 +256,15 @@ const Map<int, int> macOSKeyCodeToWindowsKeyCode = {
   67: VK_MULTIPLY,
   69: VK_ADD,
   71: VK_CLEAR,
+  72: VK_VOLUME_UP,
+  73: VK_VOLUME_DOWN,
+  74: VK_VOLUME_MUTE,
   75: VK_DIVIDE,
   76: VK_RETURN,
   78: VK_SUBTRACT,
   79: VK_F18,
   80: VK_F19,
+  81: VK_OEM_PLUS,
   82: VK_NUMPAD0,
   83: VK_NUMPAD1,
   84: VK_NUMPAD2,
@@ -295,9 +305,64 @@ const Map<int, int> macOSKeyCodeToWindowsKeyCode = {
 };
 
 /// Normalizes a macOS hardware key code to the Windows virtual key code used by
-/// the rest of the app. Unknown keys pass through unchanged.
-int normalizeMacOSKeyCode(int keyCode) {
-  return macOSKeyCodeToWindowsKeyCode[keyCode] ?? keyCode;
+/// the rest of the app. Unknown keys return null so they cannot collide with
+/// unrelated Windows virtual key codes.
+int? normalizeMacOSKeyCode(int keyCode) {
+  return macOSKeyCodeToWindowsKeyCode[keyCode];
+}
+
+/// Returns true when the aggregate macOS flags indicate Shift is down.
+bool isMacOSShiftDown(int flags) {
+  return (flags & macOSCGEventFlagMaskShift) != 0;
+}
+
+/// Tracks side-specific modifier state for macOS flagsChanged events.
+///
+/// CGEvent flags report aggregate modifier families, so the event key code must
+/// be combined with the previous state to distinguish releasing one side while
+/// the opposite side remains held.
+class MacOSModifierStateTracker {
+  final Set<int> _pressedMacKeyCodes = {};
+
+  bool? updateForFlagsChanged(int macKeyCode, int flags) {
+    final flagMask = macOSModifierFlagMask(macKeyCode);
+    if (flagMask == null) return null;
+
+    final isModifierFamilyDown = (flags & flagMask) != 0;
+    if (isModifierFamilyDown && !_pressedMacKeyCodes.contains(macKeyCode)) {
+      _pressedMacKeyCodes.add(macKeyCode);
+      return true;
+    }
+
+    _pressedMacKeyCodes.remove(macKeyCode);
+    if (!isModifierFamilyDown) {
+      _pressedMacKeyCodes.removeWhere((pressedKeyCode) =>
+          macOSModifierFlagMask(pressedKeyCode) == flagMask);
+    }
+    return false;
+  }
+}
+
+/// Returns the aggregate macOS modifier flag mask associated with a key code.
+int? macOSModifierFlagMask(int macKeyCode) {
+  switch (macKeyCode) {
+    case 54:
+    case 55:
+      return macOSCGEventFlagMaskCommand;
+    case 56:
+    case 60:
+      return macOSCGEventFlagMaskShift;
+    case 57:
+      return macOSCGEventFlagMaskAlphaShift;
+    case 58:
+    case 61:
+      return macOSCGEventFlagMaskAlternate;
+    case 59:
+    case 62:
+      return macOSCGEventFlagMaskControl;
+    default:
+      return null;
+  }
 }
 
 /// Loads custom key mappings from user configuration

@@ -39,6 +39,7 @@ DynamicLibrary? _coreFoundationLibrary;
 Pointer<Void>? _macEventTap;
 Pointer<Void>? _macRunLoopSource;
 Pointer<Void>? _macRunLoop;
+final _macModifierStateTracker = MacOSModifierStateTracker();
 
 DynamicLibrary get _applicationServices =>
     _applicationServicesLibrary ??= DynamicLibrary.open(
@@ -135,11 +136,6 @@ const int _kCGEventFlagsChanged = 12;
 const int _kCGEventTapDisabledByTimeout = 0xFFFFFFFE;
 const int _kCGEventTapDisabledByUserInput = 0xFFFFFFFF;
 const int _kCGKeyboardEventKeycode = 9;
-const int _kCGEventFlagMaskAlphaShift = 0x00010000;
-const int _kCGEventFlagMaskShift = 0x00020000;
-const int _kCGEventFlagMaskControl = 0x00040000;
-const int _kCGEventFlagMaskAlternate = 0x00080000;
-const int _kCGEventFlagMaskCommand = 0x00100000;
 
 int lowLevelKeyboardProc(
   int nCode,
@@ -362,11 +358,19 @@ Pointer<Void> macKeyboardProc(
   final macKeyCode =
       _cgEventGetIntegerValueField(event, _kCGKeyboardEventKeycode);
   final keyCode = normalizeMacOSKeyCode(macKeyCode);
+  if (keyCode == null) {
+    return event;
+  }
+
   final flags = _cgEventGetFlags(event);
-  final isShiftDown = (flags & _kCGEventFlagMaskShift) != 0;
+  final isShiftDown = isMacOSShiftDown(flags);
   final isPressed = type == _kCGEventFlagsChanged
-      ? _isMacOSModifierPressed(macKeyCode, flags)
+      ? _macModifierStateTracker.updateForFlagsChanged(macKeyCode, flags)
       : type == _kCGEventKeyDown;
+
+  if (isPressed == null) {
+    return event;
+  }
 
   sendPort?.send([keyCode, isPressed, isShiftDown]);
 
@@ -379,27 +383,6 @@ Pointer<Void> macKeyboardProc(
   }
 
   return event;
-}
-
-bool _isMacOSModifierPressed(int macKeyCode, int flags) {
-  switch (macKeyCode) {
-    case 54:
-    case 55:
-      return (flags & _kCGEventFlagMaskCommand) != 0;
-    case 56:
-    case 60:
-      return (flags & _kCGEventFlagMaskShift) != 0;
-    case 57:
-      return (flags & _kCGEventFlagMaskAlphaShift) != 0;
-    case 58:
-    case 61:
-      return (flags & _kCGEventFlagMaskAlternate) != 0;
-    case 59:
-    case 62:
-      return (flags & _kCGEventFlagMaskControl) != 0;
-    default:
-      return true;
-  }
 }
 
 void unhook() {

@@ -39,6 +39,13 @@ flutter build macos --debug
 open build/macos/Build/Products/Debug/OverKeys.app
 ```
 
+For a local release bundle:
+
+```bash
+flutter build macos --release
+open build/macos/Build/Products/Release/OverKeys.app
+```
+
 On first launch, macOS prompts for Input Monitoring permission so OverKeys can
 listen for global key events.
 

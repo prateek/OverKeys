@@ -22,17 +22,27 @@ class KeyEventService {
   /// ReceivePort for keyboard events
   ReceivePort? _receivePort;
 
+  /// Isolate running the platform keyboard hook
+  Isolate? _hookIsolate;
+
   /// Sets up the keyboard event listener
   void setupKeyListener(ReceivePort Function() createReceivePort,
       Function(dynamic) handleKeyEvent) {
-    _receivePort = createReceivePort();
-    Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
+    final receivePort = createReceivePort();
+    _receivePort = receivePort;
+    Isolate.spawn(setHook, receivePort.sendPort).then((isolate) {
+      if (_receivePort != receivePort) {
+        isolate.kill(priority: Isolate.immediate);
+        return;
+      }
+      _hookIsolate = isolate;
       // Only attach listener after isolate spawn succeeds
-      _receivePort!.listen(handleKeyEvent);
+      receivePort.listen(handleKeyEvent);
     }).catchError((error) {
       // Close the unused port before handling error
       _receivePort?.close();
       _receivePort = null;
+      _hookIsolate = null;
       _log.error('Error spawning Isolate', error: error);
       throw error;
     });
@@ -40,6 +50,8 @@ class KeyEventService {
 
   /// Disposes of resources and closes the receive port
   void dispose() {
+    _hookIsolate?.kill(priority: Isolate.immediate);
+    _hookIsolate = null;
     _receivePort?.close();
     _receivePort = null;
     _activeTriggers.clear();

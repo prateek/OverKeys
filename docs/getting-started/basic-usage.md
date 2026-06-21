@@ -1,12 +1,14 @@
 # Basic Usage
 
-OverKeys runs in the system tray to provide quick access to its features without cluttering your desktop.
+OverKeys runs from the Windows system tray or macOS menu bar to provide quick access to its features without cluttering your desktop.
 
-## Accessing the Tray Icon
+## Accessing the Tray or Menu Bar Icon
 
-The OverKeys icon appears in the Windows system tray (notification area) after launching the application.
+The OverKeys icon appears in the Windows system tray (notification area) or macOS menu bar after launching the application.
 
-## Tray Icon Actions
+On macOS, grant Input Monitoring permission when prompted. If key presses do not appear after granting permission, quit and reopen OverKeys.
+
+## Icon Actions
 
 ### Left-Click
 
@@ -16,7 +18,7 @@ The OverKeys icon appears in the Windows system tray (notification area) after l
 
 ### Right-Click
 
-Right-clicking the tray icon opens a context menu with the following options:
+Right-clicking the tray or menu bar icon opens a context menu with the following options:
 
 - **Move**: Toggles mouse interaction with the keyboard overlay
 - **Auto Hide**: Toggles automatic hiding of the keyboard after a period of inactivity
