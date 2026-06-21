@@ -3,10 +3,11 @@
 <plist version="1.0">
 <dict>
 	<!--
-		OverKeys is not sandboxed. A sandboxed app cannot install the global
-		CGEventTap that the keyboard overlay relies on, nor open the local TCP
-		socket used for Kanata integration. The app ships outside the Mac App
-		Store (GitHub releases), so the sandbox is intentionally disabled.
+		OverKeys is not sandboxed: a sandboxed app cannot install the global
+		CGEventTap the keyboard overlay relies on. (The Kanata integration's
+		outbound TCP socket isn't the reason — that would only need the
+		network.client entitlement.) The app ships outside the Mac App Store
+		(GitHub releases), so the sandbox is intentionally disabled.
 	-->
 	<key>com.apple.security.cs.allow-jit</key>
 	<true/>

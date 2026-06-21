@@ -4,8 +4,8 @@
 <dict>
 	<!--
 		OverKeys is not sandboxed; see DebugProfile.entitlements for why. The
-		global keyboard tap and Kanata TCP socket are incompatible with the
-		App Sandbox, and distribution is via GitHub releases, not the App Store.
+		global keyboard event tap is incompatible with the App Sandbox, and
+		distribution is via GitHub releases, not the App Store.
 	-->
 </dict>
 </plist>

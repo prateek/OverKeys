@@ -241,7 +241,7 @@ flutter build macos     # on macOS
 macOS isn't published as a prebuilt release yet — build it from source as above.
 
 - **Permissions.** Global key capture uses a system event tap, which macOS gates behind **Accessibility**. Add OverKeys under *System Settings → Privacy & Security → Accessibility* and restart it. No prompt appears automatically, so you have to add it by hand — until you do, the overlay shows but keys never light up.
-- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't observe global key events or open the Kanata TCP socket, so it's distributed outside the Mac App Store (like the Windows build).
+- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't install the global event tap that captures keystrokes — so it's distributed outside the Mac App Store (like the Windows build).
 - **Menu-bar app.** OverKeys runs as an agent app (no Dock icon) and is controlled from its menu-bar tray icon, mirroring the Windows tray behavior.
 - **Launch at startup** requires macOS 13 or later (it's backed by `SMAppService`).
 
