@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart'
     hide MethodCallHandler;
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:overkeys/services/kanata_service.dart';
@@ -26,7 +27,8 @@ import 'providers/keyboard_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/keyboard_screen.dart';
-import 'utils/hooks.dart';
+
+const MethodChannel _windowChannel = MethodChannel('overkeys/window');
 
 class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
@@ -60,6 +62,7 @@ class _MainAppState extends ConsumerState<MainApp>
   void initState() {
     super.initState();
     _configLoader = ConfigurationLoader(_kanataService);
+    _setupNativeWindowChannel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
@@ -126,10 +129,10 @@ class _MainAppState extends ConsumerState<MainApp>
   void dispose() {
     windowManager.removeListener(this);
     trayManager.removeListener(this);
-    unhook();
+    _keyEventService.dispose();
     _kanataService.dispose();
     _autoHideManager.dispose();
-    _keyEventService.clearActiveTriggers();
+    _windowChannel.setMethodCallHandler(null);
     _saveAllPreferences();
     super.dispose();
   }
@@ -398,6 +401,19 @@ class _MainAppState extends ConsumerState<MainApp>
     );
 
     _setupTray();
+  }
+
+  void _setupNativeWindowChannel() {
+    _windowChannel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'openPreferences':
+          await _showPreferences();
+          return null;
+        default:
+          throw MissingPluginException(
+              'Not implemented method: ${call.method}');
+      }
+    });
   }
 
   @override
