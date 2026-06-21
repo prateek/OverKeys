@@ -121,6 +121,7 @@ Access additional configuration options:
 - **Use custom font**: Enable using a custom font for key labels
 - **Use 6-column layout**: Enable 6-column split matrix layout
 - **Connect to Kanata**: Enable integration with Kanata keyboard software
+- **Hide on default layer**: Hide the overlay when Kanata reports the default layer
 - **Keyboard follows mouse**: EXPERIMENTAL - Makes the keyboard follow your mouse cursor across monitors
 - **Open config file**: Access and modify the configuration file directly
 

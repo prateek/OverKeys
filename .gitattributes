@@ -1,60 +1,29 @@
 * text=auto
 
 .fvmrc text eol=lf
+.github/CODEOWNERS text eol=lf
 .github/CONTRIBUTING.md text eol=lf
-.github/workflows/nightly-build.yml text eol=lf
-.github/workflows/release-pipeline.yml text eol=lf
-.github/workflows/test.yml text eol=lf
+.github/workflows/*.yml text eol=lf
 .gitignore text eol=lf
+.release-please-manifest.json text eol=lf
 analysis_options.yaml text eol=lf
 pubspec.lock text eol=lf
 pubspec.yaml text eol=lf
 
-docs/advanced/6-column-layouts.md text eol=lf
-docs/advanced/alternative-layouts.md text eol=lf
-docs/advanced/custom-aliases.md text eol=lf
-docs/advanced/custom-font.md text eol=lf
-docs/advanced/custom-layouts.md text eol=lf
-docs/advanced/ignored-keys.md text eol=lf
-docs/advanced/kanata-integration.md text eol=lf
-docs/advanced/layer-switching.md text eol=lf
-docs/advanced/locales.md text eol=lf
-docs/advanced/shift-mappings.md text eol=lf
-docs/getting-started/basic-usage.md text eol=lf
-docs/getting-started/installation.md text eol=lf
-docs/index.md text eol=lf
-docs/user-guide/learning-mode.md text eol=lf
-docs/user-guide/preferences.md text eol=lf
+assets/**/*.svg text eol=lf
+docs/** text eol=lf
 
-lib/app.dart text eol=lf
-lib/main.dart text eol=lf
-lib/models/keyboard_layouts.dart text eol=lf
-lib/providers/app_state_provider.g.dart text eol=lf
-lib/providers/keyboard_provider.g.dart text eol=lf
-lib/providers/preferences_provider.g.dart text eol=lf
-lib/screens/preferences_screen.dart text eol=lf
-lib/services/key_event_service.dart text eol=lf
-lib/utils/hooks.dart text eol=lf
-lib/utils/key_code.dart text eol=lf
-lib/widgets/debug_viewer.dart text eol=lf
-lib/widgets/tabs/advanced_tab.dart text eol=lf
-lib/widgets/tabs/learn_tab.dart text eol=lf
-
-test/README.md text eol=lf
-test/utils/key_code_test.dart text eol=lf
+lib/** text eol=lf
+test/** text eol=lf
 
 macos/** text eol=lf
 linux/** text eol=lf
 windows/.gitignore text eol=lf
 windows/CMakeLists.txt text eol=lf
 windows/flutter/** text eol=lf
-windows/runner/flutter_window.cpp text eol=lf
-windows/runner/flutter_window.h text eol=lf
-windows/runner/main.cpp text eol=lf
-windows/runner/resource.h text eol=lf
-windows/runner/runner.exe.manifest text eol=lf
-windows/runner/utils.cpp text eol=lf
-windows/runner/utils.h text eol=lf
+windows/runner/** text eol=lf
+
+release-please-config.json text eol=lf
 
 *.ps1 text eol=crlf
 *.rc text eol=crlf
