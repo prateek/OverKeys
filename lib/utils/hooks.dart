@@ -3,10 +3,14 @@ import 'dart:isolate';
 import 'dart:ffi';
 import 'package:ffi/ffi.dart';
 import 'package:win32/win32.dart';
+import 'key_code.dart';
 import 'logger.dart';
 
-/// Low-level keyboard hook implementation using Windows API
-/// Captures global keyboard events and session lock/unlock notifications
+/// Low-level global keyboard hook implementations.
+///
+/// Windows uses a Win32 low-level keyboard hook. macOS uses a Core Graphics
+/// event tap and normalizes hardware key codes to the same virtual key codes
+/// used by the Windows path.
 
 /// Logger instance for hooks
 final _log = SimplePrintLogger('Hooks');
@@ -16,9 +20,126 @@ final keyboardProc = Pointer.fromFunction<HOOKPROC>(lowLevelKeyboardProc, 0);
 
 /// Pointer to the session notification window procedure
 final sessionProc = Pointer.fromFunction<WNDPROC>(sessionNotificationProc, 0);
-late int hookId;
-late int sessionWindowHandle;
+int? hookId;
+int? sessionWindowHandle;
 SendPort? sendPort;
+
+typedef _CGEventTapCallbackNative = Pointer<Void> Function(
+  Pointer<Void> proxy,
+  Uint32 type,
+  Pointer<Void> event,
+  Pointer<Void> refcon,
+);
+
+final _macKeyboardProc =
+    Pointer.fromFunction<_CGEventTapCallbackNative>(macKeyboardProc);
+
+DynamicLibrary? _applicationServicesLibrary;
+DynamicLibrary? _coreFoundationLibrary;
+Pointer<Void>? _macEventTap;
+Pointer<Void>? _macRunLoopSource;
+Pointer<Void>? _macRunLoop;
+
+DynamicLibrary get _applicationServices =>
+    _applicationServicesLibrary ??= DynamicLibrary.open(
+      '/System/Library/Frameworks/ApplicationServices.framework/'
+      'ApplicationServices',
+    );
+
+DynamicLibrary get _coreFoundation => _coreFoundationLibrary ??=
+    DynamicLibrary.open('/System/Library/Frameworks/CoreFoundation.framework/'
+        'CoreFoundation');
+
+final _cgEventTapCreate = _applicationServices.lookupFunction<
+    Pointer<Void> Function(
+      Uint32 tap,
+      Uint32 place,
+      Uint32 options,
+      Uint64 eventsOfInterest,
+      Pointer<NativeFunction<_CGEventTapCallbackNative>> callback,
+      Pointer<Void> userInfo,
+    ),
+    Pointer<Void> Function(
+      int tap,
+      int place,
+      int options,
+      int eventsOfInterest,
+      Pointer<NativeFunction<_CGEventTapCallbackNative>> callback,
+      Pointer<Void> userInfo,
+    )>('CGEventTapCreate');
+
+final _cgEventTapEnable = _applicationServices.lookupFunction<
+    Void Function(Pointer<Void> tap, Bool enable),
+    void Function(Pointer<Void> tap, bool enable)>('CGEventTapEnable');
+
+final _cgEventGetIntegerValueField = _applicationServices.lookupFunction<
+    Int64 Function(Pointer<Void> event, Uint32 field),
+    int Function(
+        Pointer<Void> event, int field)>('CGEventGetIntegerValueField');
+
+final _cgEventGetFlags = _applicationServices.lookupFunction<
+    Uint64 Function(Pointer<Void> event),
+    int Function(Pointer<Void> event)>('CGEventGetFlags');
+
+final _cgPreflightListenEventAccess =
+    _applicationServices.lookupFunction<Bool Function(), bool Function()>(
+        'CGPreflightListenEventAccess');
+
+final _cgRequestListenEventAccess =
+    _applicationServices.lookupFunction<Bool Function(), bool Function()>(
+        'CGRequestListenEventAccess');
+
+final _cfMachPortCreateRunLoopSource = _coreFoundation.lookupFunction<
+    Pointer<Void> Function(
+      Pointer<Void> allocator,
+      Pointer<Void> port,
+      IntPtr order,
+    ),
+    Pointer<Void> Function(
+      Pointer<Void> allocator,
+      Pointer<Void> port,
+      int order,
+    )>('CFMachPortCreateRunLoopSource');
+
+final _cfRunLoopAddSource = _coreFoundation.lookupFunction<
+    Void Function(
+      Pointer<Void> runLoop,
+      Pointer<Void> source,
+      Pointer<Void> mode,
+    ),
+    void Function(
+      Pointer<Void> runLoop,
+      Pointer<Void> source,
+      Pointer<Void> mode,
+    )>('CFRunLoopAddSource');
+
+final _cfRunLoopGetCurrent = _coreFoundation.lookupFunction<
+    Pointer<Void> Function(), Pointer<Void> Function()>('CFRunLoopGetCurrent');
+
+final _cfRunLoopRun = _coreFoundation
+    .lookupFunction<Void Function(), void Function()>('CFRunLoopRun');
+
+final _cfRelease = _coreFoundation.lookupFunction<
+    Void Function(Pointer<Void> cf),
+    void Function(Pointer<Void> cf)>('CFRelease');
+
+Pointer<Void> get _cfRunLoopCommonModes =>
+    _coreFoundation.lookup<Pointer<Void>>('kCFRunLoopCommonModes').value;
+
+const int _kCGSessionEventTap = 1;
+const int _kCGHeadInsertEventTap = 0;
+const int _kCGEventTapOptionListenOnly = 1;
+const int _kCGEventKeyDown = 10;
+const int _kCGEventKeyUp = 11;
+const int _kCGEventFlagsChanged = 12;
+const int _kCGEventTapDisabledByTimeout = 0xFFFFFFFE;
+const int _kCGEventTapDisabledByUserInput = 0xFFFFFFFF;
+const int _kCGKeyboardEventKeycode = 9;
+const int _kCGEventFlagMaskAlphaShift = 0x00010000;
+const int _kCGEventFlagMaskShift = 0x00020000;
+const int _kCGEventFlagMaskControl = 0x00040000;
+const int _kCGEventFlagMaskAlternate = 0x00080000;
+const int _kCGEventFlagMaskCommand = 0x00100000;
 
 int lowLevelKeyboardProc(
   int nCode,
@@ -45,7 +166,7 @@ int lowLevelKeyboardProc(
       }
     }
   }
-  return CallNextHookEx(hookId, nCode, wParam, lParam);
+  return CallNextHookEx(hookId ?? 0, nCode, wParam, lParam);
 }
 
 int sessionNotificationProc(int hwnd, int message, int wParam, int lParam) {
@@ -111,17 +232,35 @@ int createSessionNotificationWindow() {
 void setHook(SendPort port) {
   sendPort = port;
 
+  if (Platform.isWindows) {
+    _setWindowsHook();
+    return;
+  }
+
+  if (Platform.isMacOS) {
+    _setMacOSHook();
+    return;
+  }
+
+  _log.warning('Global keyboard hook is not supported on '
+      '${Platform.operatingSystem}.');
+  sendPort?.send(['hook_error', 'unsupported_platform']);
+}
+
+void _setWindowsHook() {
   // Set up keyboard hook
-  hookId = SetWindowsHookEx(
+  final currentHookId = SetWindowsHookEx(
       WH_KEYBOARD_LL, keyboardProc, GetModuleHandle(nullptr), 0);
-  if (hookId == 0) {
+  if (currentHookId == 0) {
     _log.error('Failed to install hook.');
     exit(1);
   }
+  hookId = currentHookId;
 
   // Set up session notification window
-  sessionWindowHandle = createSessionNotificationWindow();
-  registerSessionNotification(sessionWindowHandle);
+  final currentSessionWindowHandle = createSessionNotificationWindow();
+  sessionWindowHandle = currentSessionWindowHandle;
+  registerSessionNotification(currentSessionWindowHandle);
 
   final msg = calloc<MSG>();
   try {
@@ -135,9 +274,155 @@ void setHook(SendPort port) {
   }
 }
 
+void _setMacOSHook() {
+  if (!_ensureMacOSInputMonitoringAccess()) {
+    _log.warning('Input Monitoring permission is required for OverKeys to '
+        'listen to global key events on macOS.');
+    sendPort?.send(['hook_error', 'input_monitoring_permission']);
+    return;
+  }
+
+  final eventsOfInterest = (1 << _kCGEventKeyDown) |
+      (1 << _kCGEventKeyUp) |
+      (1 << _kCGEventFlagsChanged);
+
+  _macEventTap = _cgEventTapCreate(
+    _kCGSessionEventTap,
+    _kCGHeadInsertEventTap,
+    _kCGEventTapOptionListenOnly,
+    eventsOfInterest,
+    _macKeyboardProc,
+    nullptr,
+  );
+
+  final eventTap = _macEventTap;
+  if (eventTap == null || eventTap == nullptr) {
+    _log.error('Failed to create macOS keyboard event tap.');
+    sendPort?.send(['hook_error', 'event_tap_unavailable']);
+    return;
+  }
+
+  _macRunLoopSource = _cfMachPortCreateRunLoopSource(nullptr, eventTap, 0);
+  final runLoopSource = _macRunLoopSource;
+  if (runLoopSource == null || runLoopSource == nullptr) {
+    _log.error('Failed to create macOS keyboard event tap run loop source.');
+    sendPort?.send(['hook_error', 'event_tap_run_loop_unavailable']);
+    _cfRelease(eventTap);
+    _macEventTap = null;
+    return;
+  }
+
+  _macRunLoop = _cfRunLoopGetCurrent();
+  _cfRunLoopAddSource(_macRunLoop!, runLoopSource, _cfRunLoopCommonModes);
+  _cgEventTapEnable(eventTap, true);
+  _cfRunLoopRun();
+
+  _cfRelease(runLoopSource);
+  _cfRelease(eventTap);
+  _macRunLoopSource = null;
+  _macEventTap = null;
+  _macRunLoop = null;
+}
+
+bool _ensureMacOSInputMonitoringAccess() {
+  try {
+    if (_cgPreflightListenEventAccess()) {
+      return true;
+    }
+    return _cgRequestListenEventAccess();
+  } on ArgumentError catch (error) {
+    _log.warning(
+      'Could not preflight macOS Input Monitoring permission: $error',
+    );
+    return true;
+  }
+}
+
+Pointer<Void> macKeyboardProc(
+  Pointer<Void> proxy,
+  int type,
+  Pointer<Void> event,
+  Pointer<Void> refcon,
+) {
+  if (type == _kCGEventTapDisabledByTimeout ||
+      type == _kCGEventTapDisabledByUserInput) {
+    final eventTap = _macEventTap;
+    if (eventTap != null && eventTap != nullptr) {
+      _cgEventTapEnable(eventTap, true);
+    }
+    return event;
+  }
+
+  if (type != _kCGEventKeyDown &&
+      type != _kCGEventKeyUp &&
+      type != _kCGEventFlagsChanged) {
+    return event;
+  }
+
+  final macKeyCode =
+      _cgEventGetIntegerValueField(event, _kCGKeyboardEventKeycode);
+  final keyCode = normalizeMacOSKeyCode(macKeyCode);
+  final flags = _cgEventGetFlags(event);
+  final isShiftDown = (flags & _kCGEventFlagMaskShift) != 0;
+  final isPressed = type == _kCGEventFlagsChanged
+      ? _isMacOSModifierPressed(macKeyCode, flags)
+      : type == _kCGEventKeyDown;
+
+  sendPort?.send([keyCode, isPressed, isShiftDown]);
+
+  if (!isPressed) {
+    if (!isShiftDown) {
+      sendPort?.send([keyCode, false, true]);
+    } else {
+      sendPort?.send([keyCode, false, false]);
+    }
+  }
+
+  return event;
+}
+
+bool _isMacOSModifierPressed(int macKeyCode, int flags) {
+  switch (macKeyCode) {
+    case 54:
+    case 55:
+      return (flags & _kCGEventFlagMaskCommand) != 0;
+    case 56:
+    case 60:
+      return (flags & _kCGEventFlagMaskShift) != 0;
+    case 57:
+      return (flags & _kCGEventFlagMaskAlphaShift) != 0;
+    case 58:
+    case 61:
+      return (flags & _kCGEventFlagMaskAlternate) != 0;
+    case 59:
+    case 62:
+      return (flags & _kCGEventFlagMaskControl) != 0;
+    default:
+      return true;
+  }
+}
+
 void unhook() {
-  UnhookWindowsHookEx(hookId);
-  unregisterSessionNotification(sessionWindowHandle);
-  DestroyWindow(sessionWindowHandle);
-  UnregisterClass(TEXT('SessionNotificationWindow'), GetModuleHandle(nullptr));
+  if (Platform.isWindows) {
+    final currentHookId = hookId;
+    if (currentHookId != null) {
+      UnhookWindowsHookEx(currentHookId);
+    }
+
+    final currentSessionWindowHandle = sessionWindowHandle;
+    if (currentSessionWindowHandle != null) {
+      unregisterSessionNotification(currentSessionWindowHandle);
+      DestroyWindow(currentSessionWindowHandle);
+      UnregisterClass(
+          TEXT('SessionNotificationWindow'), GetModuleHandle(nullptr));
+    }
+    return;
+  }
+
+  if (Platform.isMacOS) {
+    final eventTap = _macEventTap;
+    if (eventTap != null && eventTap != nullptr) {
+      _cgEventTapEnable(eventTap, false);
+    }
+  }
 }

@@ -43,6 +43,7 @@ Before you begin, ensure you have the following installed:
 
      ```bash
      flutter run -d windows
+     flutter run -d macos
      ```
 
 3. **Create a Feature Branch**
@@ -61,12 +62,16 @@ For detailed build instructions:
 ```bash
 # For testing
 flutter run -d windows
+flutter run -d macos
 
-# For release build
+# For release builds
 flutter build windows
+flutter build macos
 ```
 
-The release executable will be located at `build\windows\x64\runner\Release`.
+The Windows release executable will be located at
+`build\windows\x64\runner\Release`. The macOS app bundle will be located under
+`build/macos/Build/Products/Release`.
 
 ## Coding Standards
 

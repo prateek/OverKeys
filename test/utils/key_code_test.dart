@@ -176,6 +176,40 @@ void main() {
       });
     });
 
+    group('macOS key code normalization', () {
+      test('normalizes letter keys to Windows virtual key codes', () {
+        expect(normalizeMacOSKeyCode(0), VK_A);
+        expect(normalizeMacOSKeyCode(11), VK_B);
+        expect(normalizeMacOSKeyCode(12), VK_Q);
+      });
+
+      test('normalizes punctuation keys to Windows virtual key codes', () {
+        expect(normalizeMacOSKeyCode(24), VK_OEM_PLUS);
+        expect(normalizeMacOSKeyCode(27), VK_OEM_MINUS);
+        expect(normalizeMacOSKeyCode(43), VK_OEM_COMMA);
+        expect(normalizeMacOSKeyCode(47), VK_OEM_PERIOD);
+      });
+
+      test('normalizes navigation and modifier keys', () {
+        expect(normalizeMacOSKeyCode(55), VK_LWIN);
+        expect(normalizeMacOSKeyCode(56), VK_LSHIFT);
+        expect(normalizeMacOSKeyCode(59), VK_LCONTROL);
+        expect(normalizeMacOSKeyCode(123), VK_LEFT);
+        expect(normalizeMacOSKeyCode(126), VK_UP);
+      });
+
+      test('leaves unknown macOS key codes unchanged', () {
+        expect(normalizeMacOSKeyCode(999), 999);
+      });
+
+      test('normalized key codes use existing shifted mappings', () {
+        final normalizedKeyCode = normalizeMacOSKeyCode(18);
+
+        expect(getKeyFromKeyCodeShift(normalizedKeyCode, false), '1');
+        expect(getKeyFromKeyCodeShift(normalizedKeyCode, true), '!');
+      });
+    });
+
     group('activeKeyCodeShiftMap manipulation', () {
       test('can be modified independently', () {
         final original = activeKeyCodeShiftMap[(0x31, false)];

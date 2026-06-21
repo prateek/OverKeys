@@ -1,6 +1,7 @@
 # Installation
 
-This guide will walk you through installing OverKeys on your Windows system.
+This guide walks through installing OverKeys on Windows and building the macOS
+app bundle from source.
 
 ## Methods
 
@@ -12,7 +13,7 @@ The recommended installation method is using Windows Package Manager (winget), a
 winget install AngeloConvento.OverKeys
 ```
 
-### 2. Using EXE Intstaller
+### 2. Using EXE Installer
 
 If you prefer manual installation:
 
@@ -28,13 +29,26 @@ For a portable version without installation:
 2. Extract the ZIP file to any location of your choice
 3. Run `OverKeys.exe` from the extracted folder
 
+### 4. Building the macOS App Bundle
+
+The macOS app can be built from source:
+
+```bash
+flutter pub get
+flutter build macos --debug
+open build/macos/Build/Products/Debug/OverKeys.app
+```
+
+On first launch, macOS prompts for Input Monitoring permission so OverKeys can
+listen for global key events.
+
 ## First Launch
 
 After installation:
 
 1. OverKeys will launch automatically
-2. The application will appear in your system tray
-3. Right-click the OverKeys icon in the system tray to access preferences and configuration options
+2. The application will appear in your system tray or macOS menu bar
+3. Right-click the OverKeys icon to access preferences and configuration options
 
 ## Updating OverKeys
 

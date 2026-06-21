@@ -96,7 +96,7 @@ test('serialization and deserialization are symmetric', () {
 
 **Coverage**:
 
-- `key_code_test.dart` (30 tests): Windows virtual key code mappings, shift key variations
+- `key_code_test.dart`: Windows virtual key mappings, macOS key-code normalization, and shift key variations
 - `font_options_test.dart` (12 tests): Available font families validation
 - `theme_manager_test.dart` (11 tests): Light/dark color schemes
 
@@ -320,7 +320,9 @@ See `.github/workflows/test.yml` for CI configuration.
 
 ### Platform-Specific Tests
 
-Some tests use Windows-only packages (win32, hotkey_manager). These are skipped on non-Windows platforms automatically.
+Key-code tests use Windows virtual key constants because the app stores custom
+key mappings in that format. macOS keyboard events are normalized to those
+constants before the app handles them.
 
 ### Slow Tests
 

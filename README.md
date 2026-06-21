@@ -22,7 +22,7 @@
     </a>
   </p>
 
-  <h3 align="center">An open-source keyboard layout visualizer for Windows</h3>
+  <h3 align="center">An open-source keyboard layout visualizer for Windows and macOS</h3>
 
   <p align="center">
     <a href="#getting-started">Install Now</a>
@@ -169,7 +169,8 @@ For complete feature details, see the [documentation](docs/index.md).
 
 ### Installation
 
-OverKeys can be installed through several methods:
+OverKeys can be installed through several methods. Windows has packaged
+release builds; macOS can be built from source.
 
 1. **Using Winget (Recommended)**
 
@@ -185,6 +186,17 @@ OverKeys can be installed through several methods:
 
 3. **Portable Version**
    - Download and extract the [portable ZIP file](https://github.com/conventoangelo/OverKeys/releases/latest)
+
+4. **macOS App Bundle**
+
+   ```bash
+   flutter pub get
+   flutter build macos --debug
+   open build/macos/Build/Products/Debug/OverKeys.app
+   ```
+
+   macOS will ask for Input Monitoring permission the first time OverKeys starts
+   listening for global key events.
 
 For detailed installation instructions, see the [Installation Guide](/docs/getting-started/installation.md).
 

@@ -68,6 +68,10 @@ class KeyEventService {
         if (message[0] == 'session_unlock') {
           keyboardNotifier.clearKeyPressStates();
         }
+        if (message[0] == 'hook_error') {
+          _log.warning(
+              'Keyboard hook setup failed: ${message.length > 1 ? message[1] : 'unknown'}');
+        }
         return;
       }
 
