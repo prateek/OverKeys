@@ -106,5 +106,5 @@
 	},
 	"kanataHost": "127.0.0.1",
 	"kanataPort": 4039,
-	"ignoredKeys": ["PRTSC", "F13", "F14", "F15"]
+	"ignoredKeys": ["PrintScreen", "F13", "F14", "F15"]
 }
