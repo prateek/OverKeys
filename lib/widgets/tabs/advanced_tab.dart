@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:overkeys/widgets/options/options.dart';
 import 'package:overkeys/services/config_service.dart';
 import 'package:overkeys/models/user_config.dart';
@@ -169,7 +170,7 @@ class AdvancedTab extends ConsumerWidget {
                         fontWeight: FontWeight.w600,
                         fontSize: 16)),
                 Text(
-                  'Turn related advanced setting off then on again to apply changes.',
+                  'Use Reload Config from the tray or menu bar to apply changes.',
                   style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(153),
                       fontSize: 14.0),
@@ -201,12 +202,11 @@ class AdvancedTab extends ConsumerWidget {
                 final configPath = await configService.configPath;
                 final file = File(configPath);
 
-                if (await file.exists()) {
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
-                } else {
+                if (!await file.exists()) {
                   await configService.saveConfig(UserConfig());
-                  Process.start('cmd.exe', ['/c', 'start', '', configPath]);
                 }
+
+                await launchUrl(Uri.file(configPath));
               } catch (e) {
                 debugPrint('Error opening config file: $e');
               }

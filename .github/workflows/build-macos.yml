@@ -1,0 +1,72 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [main, develop, refactor/**]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.44.2"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze project
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build macOS debug app
+        run: flutter build macos --debug
+
+      - name: Build macOS release app
+        run: flutter build macos --release
+
+      - name: Verify release entitlements
+        run: |
+          codesign -d --entitlements :- build/macos/Build/Products/Release/OverKeys.app > release-entitlements.plist 2>/dev/null
+          if grep -q "com.apple.security.get-task-allow" release-entitlements.plist; then
+            echo "Release app must not include get-task-allow"
+            exit 1
+          fi
+          if grep -q "com.apple.security.app-sandbox" release-entitlements.plist; then
+            echo "Release app must not include App Sandbox"
+            exit 1
+          fi
+
+      - name: Package .app into a zip
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r -y OverKeys-macos.zip OverKeys.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverKeys-macos
+          path: build/macos/Build/Products/Release/OverKeys-macos.zip
+          if-no-files-found: error
