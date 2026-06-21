@@ -59,8 +59,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
     _loadAppVersion();
     // Load state after other setup is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadState();
-      _requestKeyboardFocus();
+      unawaited(_showInitialWindow());
     });
   }
 
@@ -121,9 +120,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
       }
 
       if (call.method == 'requestFocus') {
-        await widget.windowController.show();
-        await windowManager.focus();
-        _requestKeyboardFocus();
+        await _showAndFocusWindow();
       }
 
       if (call.method == 'receiveLog' && mounted) {
@@ -142,6 +139,20 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
 
   Future<void> _loadState() async {
     await _stateService.loadStatesIntoProviders(ref);
+  }
+
+  Future<void> _showInitialWindow() async {
+    await _loadState();
+    if (!mounted) return;
+    await _showAndFocusWindow();
+  }
+
+  Future<void> _showAndFocusWindow() async {
+    if (!mounted) return;
+    await windowManager.show();
+    await widget.windowController.show();
+    await windowManager.focus();
+    _requestKeyboardFocus();
   }
 
   Future<void> _saveState() async {

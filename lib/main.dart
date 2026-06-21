@@ -150,7 +150,5 @@ Future<void> _initPreferencesWindow(WindowController windowController) async {
     }
     await windowManager.center();
     await windowManager.setMinimumSize(const Size(828, 621));
-    await windowController.show();
-    await windowManager.focus();
   });
 }
