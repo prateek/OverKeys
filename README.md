@@ -190,7 +190,7 @@ For detailed installation instructions, see the [Installation Guide](/docs/getti
 
 #### macOS
 
-macOS support is new and the build is currently **unsigned**. Download `OverKeys-macos.zip` from the [latest macOS build](https://github.com/conventoangelo/OverKeys/actions/workflows/build-macos.yml) (or build it yourself with `flutter build macos --release`), then unzip it into `/Applications`.
+macOS support is new, and the build is **unsigned**. Download `OverKeys-macos.zip` from the [latest macOS build](https://github.com/conventoangelo/OverKeys/actions/workflows/build-macos.yml) (or build it yourself with `flutter build macos --release`), then unzip it into `/Applications`.
 
 1. Remove the quarantine flag once, so macOS will open the unsigned app:
 
@@ -198,12 +198,14 @@ macOS support is new and the build is currently **unsigned**. Download `OverKeys
    xattr -d com.apple.quarantine /Applications/overkeys.app
    ```
 
-2. Launch OverKeys, then grant it two permissions under **System Settings → Privacy & Security**:
+2. Launch OverKeys. On first launch it prompts for two permissions, which you grant under **System Settings → Privacy & Security**:
 
    - **Accessibility** — required to see keystrokes.
    - **Input Monitoring** — required to read which keys are pressed.
 
-   OverKeys prompts for both on first launch. After granting them, quit and reopen the app. OverKeys lives in the menu bar (no Dock icon) and never intercepts or modifies your keystrokes; it only displays them.
+3. After granting both, quit and reopen the app.
+
+OverKeys lives in the menu bar (no Dock icon) and only displays your keystrokes; it never intercepts or modifies them.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
