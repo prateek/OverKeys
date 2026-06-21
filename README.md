@@ -228,22 +228,25 @@ Contributions are what make the open-source community such an amazing place to l
 
 ## Building from Source
 
-OverKeys is a [Flutter](https://flutter.dev/) desktop app. The repo pins a Flutter version in `.fvmrc` (currently **3.41.9**); [fvm](https://fvm.app/) is the easiest way to match it. The pin is required because `lucide_icons` doesn't build on Flutter 3.44+ yet — see the comment in `pubspec.yaml`.
+OverKeys is a [Flutter](https://flutter.dev/) desktop app. The repo pins Flutter **3.41.9** in `.fvmrc`, so [fvm](https://fvm.app/) is the easiest way to match it. The pin is required because `lucide_icons` doesn't build on Flutter 3.44+; see the comment in `pubspec.yaml`.
 
 ```sh
-flutter pub get
-flutter build windows   # on Windows
-flutter build macos     # on macOS
+fvm use                    # select the pinned SDK (reads .fvmrc)
+fvm flutter pub get
+fvm flutter build windows  # on Windows
+fvm flutter build macos    # on macOS
 ```
+
+Drop the `fvm` prefix if you've matched Flutter 3.41.x another way.
 
 ### macOS notes
 
-macOS isn't published as a prebuilt release yet — build it from source as above.
+There's no prebuilt macOS release yet, so build from source as above. The app lands at `build/macos/Build/Products/Release/overkeys.app`; move it to `/Applications` and open it.
 
-- **Permissions.** Global key capture uses a system event tap, which macOS gates behind **Accessibility**. Add OverKeys under *System Settings → Privacy & Security → Accessibility* and restart it. No prompt appears automatically, so you have to add it by hand — until you do, the overlay shows but keys never light up.
-- **No sandbox.** The app is intentionally not sandboxed — a sandboxed app can't install the global event tap that captures keystrokes — so it's distributed outside the Mac App Store (like the Windows build).
-- **Menu-bar app.** OverKeys runs as an agent app (no Dock icon) and is controlled from its menu-bar tray icon, mirroring the Windows tray behavior.
-- **Launch at startup** requires macOS 13 or later (it's backed by `SMAppService`).
+- **Grant Accessibility.** Key capture uses a system event tap, which macOS gates behind Accessibility. Add OverKeys under *System Settings → Privacy & Security → Accessibility* and restart it. macOS shows no prompt, so until you add it by hand the overlay appears but keys never light up.
+- **Menu-bar app.** OverKeys has no Dock icon. Find and control it from its tray icon in the menu bar at the top-right of the screen, the same as the Windows tray.
+- **Launch at startup** needs macOS 13 or later, backed by `SMAppService`.
+- **No sandbox.** The app isn't sandboxed, because a sandboxed app can't install the global event tap. Like the Windows build, it ships outside the Mac App Store.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
