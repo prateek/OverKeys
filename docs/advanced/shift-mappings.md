@@ -15,8 +15,9 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
 1. Right-click the OverKeys tray or menu bar icon
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row
-5. In the JSON file, add or modify the `customShiftMappings` object:
+4. Toggle the **Turn on advanced settings** option
+5. Click **Open** in the **Open config file** row
+6. In the JSON file, add or modify the `customShiftMappings` object:
 
     ```jsonc
     {
@@ -30,8 +31,8 @@ When you press Shift plus a key, the keyboard typically produces an alternate sy
     }
     ```
 
-6. Save the file
-7. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+7. Save the file
+8. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ## Default Shift Mappings
 

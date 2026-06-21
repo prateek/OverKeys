@@ -19,8 +19,9 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
 1. Right-click the OverKeys icon in the system tray or macOS menu bar
 2. Select **Preferences**
 3. Go to the **Advanced** tab
-4. Click **Open** in the **Open config file** row to edit the configuration file
-5. Modify the `overkeys_config.json` file:
+4. Toggle the **Turn on advanced settings** option
+5. Click **Open** in the **Open config file** row to edit the configuration file
+6. Modify the `overkeys_config.json` file:
 
    ```json
    {
@@ -31,15 +32,22 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
    }
    ```
 
-6. Save the file
-7. Toggle the **Connect to Kanata** option off then on again to apply changes
+7. Save the file
+8. Toggle the **Connect to Kanata** option off then on again to apply changes
 
 ### Configuring Kanata
 
-When running Kanata, use the `-p` flag to enable TCP communication:
+When running Kanata, use the `-p` flag to enable TCP communication. On Windows:
 
 ```pwsh
 kanata.exe -p 127.0.0.1:4039
+```
+
+On macOS or Linux, use the equivalent `kanata` binary if your build supports
+TCP layer-change messages:
+
+```bash
+kanata -p 127.0.0.1:4039
 ```
 
 On Windows, create a shortcut for `kanata_gui.exe` if you want Kanata to start
@@ -50,7 +58,8 @@ automatically:
 3. Add `-p 127.0.0.1:4039` to the target field
 4. Place the shortcut in your Windows Startup folder
 
-> **Note**: This feature is only guaranteed to work with Kanata implementations that use Windows LLHOOK (like kanata_gui.exe).
+> **Note**: Layer-change reporting depends on Kanata's TCP support. Windows
+> `kanata_gui.exe` with LLHOOK is the path OverKeys currently verifies.
 
 ## Adding Kanata Layers
 
