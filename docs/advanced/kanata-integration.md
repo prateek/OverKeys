@@ -20,8 +20,9 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
 2. Select **Preferences**
 3. Go to the **Advanced** tab
 4. Toggle the **Turn on advanced settings** option
-5. Click **Open** in the **Open config file** row to edit the configuration file
-6. Modify the `overkeys_config.json` file:
+5. Toggle the **Connect to Kanata** option
+6. Click **Open** in the **Open config file** row to edit the configuration file
+7. Modify the `overkeys_config.json` file:
 
    ```json
    {
@@ -32,8 +33,8 @@ Kanata is a keyboard remapper that supports advanced features like layers, tap-h
    }
    ```
 
-7. Save the file
-8. Right-click the tray or menu bar icon and click **Reload config** to apply changes
+8. Save the file
+9. Right-click the tray or menu bar icon and click **Reload config** to apply changes
 
 ### Configuring Kanata
 

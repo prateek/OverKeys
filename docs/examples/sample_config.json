@@ -1,7 +1,4 @@
 {
-	// This is an example configuration file for Overkeys.
-	// Copy contents or  rename this file to "overkeys_config.json"
-	// Remove comments if not using JSONC
 	"defaultUserLayout": "Canary",
 	"altLayout": "Arabic",
 	"customFont": "Lexend",
@@ -107,43 +104,7 @@
 		"ULT": ["X"],
 		"Item 1": ["Alt", "Q"]
 	},
-	// Uncomment to test locale specific key codes in QWERTZ layout
-	// "customKeys": {
-	// 	"keyCodeMap": {
-	// 		"Ü": 186,
-	// 		"+": 187,
-	// 		"#": 191,
-	// 		"Ö": 192,
-	// 		"ß": 219,
-	// 		"^": 220,
-	// 		"´": 221,
-	// 		"Ä": 222,
-	// 		"<": 226
-	// 	},
-	// 	"keyCodeShiftMap": {
-	// 		"=": 48,
-	// 		"!": 49,
-	// 		"\"": 50,
-	// 		"§": 51,
-	// 		"$": 52,
-	// 		"%": 53,
-	// 		"&": 54,
-	// 		"/": 55,
-	// 		"(": 56,
-	// 		")": 57,
-	// 		"*": 187,
-	// 		";": 188,
-	// 		":": 190,
-	// 		"'": 191,
-	// 		"?": 219,
-	// 		"°": 220,
-	// 		"`": 221,
-	// 		">": 226
-	// 	}
-	// },
 	"kanataHost": "127.0.0.1",
 	"kanataPort": 4039,
-	// Array of key names to ignore - keyboard won't appear when these keys are pressed
-	// Useful for keys like Print Screen, or keys not in your current layout
 	"ignoredKeys": ["PRTSC", "F13", "F14", "F15"]
 }
