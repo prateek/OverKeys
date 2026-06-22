@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart'
     hide MethodCallHandler;
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:overkeys/services/kanata_service.dart';
@@ -211,9 +211,40 @@ class _MainAppState extends ConsumerState<MainApp>
 
   void _setupKeyListener() {
     _keyEventService.setupKeyListener(
-      (message) => _keyEventService.handleKeyEvent(message, ref, _fadeIn,
-          _resetAutoHideTimer, () => _autoHideManager.cancelAutoHideTimer()),
+      (message) => _keyEventService.handleKeyEvent(
+        message,
+        ref,
+        _fadeIn,
+        _resetAutoHideTimer,
+        () => _autoHideManager.cancelAutoHideTimer(),
+        _showKeyListenerError,
+      ),
     );
+  }
+
+  void _showKeyListenerError(String reason) {
+    _fadeIn();
+    _autoHideManager.showOverlay(
+      ref,
+      _keyListenerErrorMessage(reason),
+      const Icon(LucideIcons.info),
+    );
+  }
+
+  String _keyListenerErrorMessage(String reason) {
+    switch (reason) {
+      case 'ACCESSIBILITY_DENIED':
+        return 'Grant Accessibility\nthen reopen OverKeys';
+      case 'INPUT_MONITORING_DENIED':
+        return 'Grant Input Monitoring\nthen reopen OverKeys';
+      case 'TAP_FAILED':
+        return 'Check keyboard permissions\nthen reopen OverKeys';
+      case 'keyboard_monitor_error':
+      case 'hook_spawn_failed':
+        return 'Keyboard listener failed\nreopen OverKeys';
+      default:
+        return 'Keyboard listening unavailable';
+    }
   }
 
   void _resetAutoHideTimer() {

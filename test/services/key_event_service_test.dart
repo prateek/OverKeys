@@ -62,6 +62,7 @@ void main() {
   late FakeKeyEventSource fake;
   late bool fadeInCalled;
   late bool autoHideReset;
+  late String? hookErrorReason;
 
   /// Wires the service to the fake source with the real handler.
   void wire(WidgetRef ref) {
@@ -74,6 +75,7 @@ void main() {
         () => fadeInCalled = true,
         () => autoHideReset = true,
         () {},
+        (reason) => hookErrorReason = reason,
       ),
       source: fake,
     );
@@ -82,6 +84,7 @@ void main() {
   setUp(() {
     service = KeyEventService();
     fake = FakeKeyEventSource();
+    hookErrorReason = null;
   });
 
   group('key press state through the seam', () {
@@ -134,6 +137,14 @@ void main() {
 
       fake.emit(['session_unlock', true]);
       expect(ref.read(keyboardProvider).keyPressStates, isEmpty);
+    });
+
+    testWidgets('hook errors are surfaced through callback', (tester) async {
+      final ref = await pumpRef(tester);
+      wire(ref);
+
+      fake.emit(['hook_error', 'INPUT_MONITORING_DENIED']);
+      expect(hookErrorReason, 'INPUT_MONITORING_DENIED');
     });
   });
 

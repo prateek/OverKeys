@@ -28,11 +28,8 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          # Pinned: lucide_icons 0.257.0 extends IconData, which became a final
-          # class in Flutter 3.44, breaking `flutter build`. Unpin once
-          # lucide_icons is bumped to a release that no longer subclasses IconData.
-          flutter-version: 3.41.9
           channel: stable
+          flutter-version: "3.44.2"
           cache: true
 
       - name: Get dependencies
@@ -53,7 +50,7 @@ jobs:
         # debugger attach to a distributed keystroke monitor).
         run: |
           ENTS=$(codesign -d --entitlements :- \
-            build/macos/Build/Products/Release/overkeys.app 2>/dev/null | tr -d '\0')
+            build/macos/Build/Products/Release/OverKeys.app 2>/dev/null | tr -d '\0')
           echo "$ENTS"
           if echo "$ENTS" | grep -q "get-task-allow"; then
             echo "::error::Release bundle ships get-task-allow"; exit 1
@@ -65,7 +62,7 @@ jobs:
       - name: Package .app into a zip
         run: |
           cd build/macos/Build/Products/Release
-          zip -r -y OverKeys-macos.zip overkeys.app
+          zip -r -y OverKeys-macos.zip OverKeys.app
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4

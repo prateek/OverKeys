@@ -52,8 +52,9 @@ class KeyEventService {
     WidgetRef ref,
     void Function() fadeIn,
     void Function() resetAutoHideTimer,
-    void Function() cancelAutoHideTimer,
-  ) {
+    void Function() cancelAutoHideTimer, [
+    void Function(String reason)? showHookError,
+  ]) {
     try {
       if (message is! List) return;
 
@@ -67,6 +68,11 @@ class KeyEventService {
       if (message[0] is String) {
         if (message[0] == 'session_unlock') {
           keyboardNotifier.clearKeyPressStates();
+        }
+        if (message[0] == 'hook_error') {
+          final reason = message.length > 1 ? message[1].toString() : 'unknown';
+          _log.warning('Keyboard listener failed: $reason');
+          showHookError?.call(reason);
         }
         return;
       }

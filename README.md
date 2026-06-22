@@ -195,7 +195,7 @@ macOS support is new, and the build is **unsigned**. Download `OverKeys-macos.zi
 1. Remove the quarantine flag once, so macOS will open the unsigned app:
 
    ```sh
-   xattr -d com.apple.quarantine /Applications/overkeys.app
+   xattr -d com.apple.quarantine /Applications/OverKeys.app
    ```
 
 2. Launch OverKeys. On first launch it prompts for two permissions, which you grant under **System Settings → Privacy & Security**:

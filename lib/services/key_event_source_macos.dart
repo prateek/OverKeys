@@ -33,8 +33,16 @@ class MacOsKeyEventSource implements KeyEventSource {
         // Fail Fast: surface tap/permission failures instead of leaving a
         // silent, dead overlay. The native side also prompts the user.
         _log.error('macOS keyboard monitor error', error: error);
+        onEvent(['hook_error', _errorCode(error)]);
       },
     );
+  }
+
+  String _errorCode(Object error) {
+    if (error is PlatformException) {
+      return error.code;
+    }
+    return 'keyboard_monitor_error';
   }
 
   void _dispatch(dynamic raw, void Function(dynamic) onEvent) {
