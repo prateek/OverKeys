@@ -28,5 +28,15 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSAccessibilityUsageDescription</key>
+	<string>OverKeys observes keystrokes to highlight the keys you press on the on-screen keyboard.</string>
+	<key>NSInputMonitoringUsageDescription</key>
+	<string>OverKeys monitors keyboard input to highlight the keys you press on the on-screen keyboard.</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<!-- Menu-bar/overlay utility: no Dock icon, and the overlay never steals
+	     focus on launch. Mirrors the Windows tray (skipTaskbar) model. -->
+	<key>LSUIElement</key>
+	<true/>
 </dict>
 </plist>

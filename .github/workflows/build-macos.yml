@@ -1,0 +1,72 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [main, develop, refactor/**]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  pull_request:
+    branches: [main, develop]
+    paths-ignore:
+      - "docs/**"
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.44.2"
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Analyze project
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build macOS app
+        run: flutter build macos --release
+
+      - name: Assert release entitlements posture
+        # The release bundle must stay unsandboxed (the global CGEvent tap can't
+        # run sandboxed) and must NOT ship get-task-allow (which would let a
+        # debugger attach to a distributed keystroke monitor).
+        run: |
+          ENTS=$(codesign -d --entitlements :- \
+            build/macos/Build/Products/Release/OverKeys.app 2>/dev/null | tr -d '\0')
+          echo "$ENTS"
+          if echo "$ENTS" | grep -q "get-task-allow"; then
+            echo "::error::Release bundle ships get-task-allow"; exit 1
+          fi
+          if ! echo "$ENTS" | grep -A1 "app-sandbox" | grep -q "<false/>"; then
+            echo "::error::Release bundle is sandboxed; the event tap needs it off"; exit 1
+          fi
+
+      - name: Package .app into a zip
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r -y OverKeys-macos.zip OverKeys.app
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OverKeys-macos
+          path: build/macos/Build/Products/Release/OverKeys-macos.zip
+          if-no-files-found: error

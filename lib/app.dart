@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart'
     hide MethodCallHandler;
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:overkeys/services/kanata_service.dart';
@@ -26,7 +26,11 @@ import 'providers/keyboard_provider.dart';
 import 'providers/preferences_provider.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/keyboard_screen.dart';
-import 'utils/hooks.dart';
+
+/// Channel the macOS Runner uses to drive native window behaviour: marking the
+/// overlay window non-focusable and routing the Settings menu item to
+/// Preferences. No-op on Windows, where these are handled elsewhere.
+const MethodChannel _windowChannel = MethodChannel('overkeys/window');
 
 class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
@@ -60,6 +64,7 @@ class _MainAppState extends ConsumerState<MainApp>
   void initState() {
     super.initState();
     _configLoader = ConfigurationLoader(_kanataService);
+    _setupNativeWindowChannel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
@@ -126,12 +131,29 @@ class _MainAppState extends ConsumerState<MainApp>
   void dispose() {
     windowManager.removeListener(this);
     trayManager.removeListener(this);
-    unhook();
+    _keyEventService.dispose();
     _kanataService.dispose();
     _autoHideManager.dispose();
-    _keyEventService.clearActiveTriggers();
+    _windowChannel.setMethodCallHandler(null);
     _saveAllPreferences();
     super.dispose();
+  }
+
+  /// Handles calls from the macOS Runner. The Settings menu item invokes
+  /// `openPreferences`, routed through [_showPreferences] so it reuses the
+  /// existing single-window dedup instead of spawning a second Preferences
+  /// window.
+  void _setupNativeWindowChannel() {
+    _windowChannel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'openPreferences':
+          await _showPreferences();
+          return null;
+        default:
+          throw MissingPluginException(
+              'Not implemented method: ${call.method}');
+      }
+    });
   }
 
   void _startMouseTracking() {
@@ -189,10 +211,40 @@ class _MainAppState extends ConsumerState<MainApp>
 
   void _setupKeyListener() {
     _keyEventService.setupKeyListener(
-      () => ReceivePort(),
-      (message) => _keyEventService.handleKeyEvent(message, ref, _fadeIn,
-          _resetAutoHideTimer, () => _autoHideManager.cancelAutoHideTimer()),
+      (message) => _keyEventService.handleKeyEvent(
+        message,
+        ref,
+        _fadeIn,
+        _resetAutoHideTimer,
+        () => _autoHideManager.cancelAutoHideTimer(),
+        _showKeyListenerError,
+      ),
     );
+  }
+
+  void _showKeyListenerError(String reason) {
+    _fadeIn();
+    _autoHideManager.showOverlay(
+      ref,
+      _keyListenerErrorMessage(reason),
+      const Icon(LucideIcons.info),
+    );
+  }
+
+  String _keyListenerErrorMessage(String reason) {
+    switch (reason) {
+      case 'ACCESSIBILITY_DENIED':
+        return 'Grant Accessibility\nthen reopen OverKeys';
+      case 'INPUT_MONITORING_DENIED':
+        return 'Grant Input Monitoring\nthen reopen OverKeys';
+      case 'TAP_FAILED':
+        return 'Check keyboard permissions\nthen reopen OverKeys';
+      case 'keyboard_monitor_error':
+      case 'hook_spawn_failed':
+        return 'Keyboard listener failed\nreopen OverKeys';
+      default:
+        return 'Keyboard listening unavailable';
+    }
   }
 
   void _resetAutoHideTimer() {

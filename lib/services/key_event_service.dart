@@ -1,12 +1,14 @@
-import 'dart:isolate';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:overkeys/models/keyboard_layouts.dart';
 import 'package:overkeys/providers/keyboard_provider.dart';
 import 'package:overkeys/providers/app_state_provider.dart';
 import 'package:overkeys/providers/preferences_provider.dart';
 import 'package:overkeys/utils/key_code.dart';
-import 'package:overkeys/utils/hooks.dart';
 import 'package:overkeys/utils/logger.dart';
+import 'key_event_source.dart';
+import 'key_event_source_macos.dart';
+import 'key_event_source_windows.dart';
 
 /// Service for handling keyboard events and user layer switching
 class KeyEventService {
@@ -19,29 +21,27 @@ class KeyEventService {
   /// Stores the stack of layers that were active before held layers were activated
   final List<KeyboardLayout> _previousLayerStack = [];
 
-  /// ReceivePort for keyboard events
-  ReceivePort? _receivePort;
+  /// Active platform event source supplying keyboard events.
+  KeyEventSource? _source;
 
-  /// Sets up the keyboard event listener
-  void setupKeyListener(ReceivePort Function() createReceivePort,
-      Function(dynamic) handleKeyEvent) {
-    _receivePort = createReceivePort();
-    Isolate.spawn(setHook, _receivePort!.sendPort).then((_) {
-      // Only attach listener after isolate spawn succeeds
-      _receivePort!.listen(handleKeyEvent);
-    }).catchError((error) {
-      // Close the unused port before handling error
-      _receivePort?.close();
-      _receivePort = null;
-      _log.error('Error spawning Isolate', error: error);
-      throw error;
-    });
+  /// Sets up the keyboard event listener using the platform's event source.
+  ///
+  /// A [source] can be injected for testing; otherwise it is selected by
+  /// platform (macOS uses the native CGEvent tap, everything else the Win32
+  /// hook).
+  void setupKeyListener(
+    void Function(dynamic) handleKeyEvent, {
+    KeyEventSource? source,
+  }) {
+    _source = source ??
+        (Platform.isMacOS ? MacOsKeyEventSource() : WindowsKeyEventSource());
+    _source!.start(handleKeyEvent);
   }
 
-  /// Disposes of resources and closes the receive port
+  /// Disposes of resources and releases the platform event source.
   void dispose() {
-    _receivePort?.close();
-    _receivePort = null;
+    _source?.dispose();
+    _source = null;
     _activeTriggers.clear();
     _previousLayerStack.clear();
   }
@@ -52,8 +52,9 @@ class KeyEventService {
     WidgetRef ref,
     void Function() fadeIn,
     void Function() resetAutoHideTimer,
-    void Function() cancelAutoHideTimer,
-  ) {
+    void Function() cancelAutoHideTimer, [
+    void Function(String reason)? showHookError,
+  ]) {
     try {
       if (message is! List) return;
 
@@ -67,6 +68,11 @@ class KeyEventService {
       if (message[0] is String) {
         if (message[0] == 'session_unlock') {
           keyboardNotifier.clearKeyPressStates();
+        }
+        if (message[0] == 'hook_error') {
+          final reason = message.length > 1 ? message[1].toString() : 'unknown';
+          _log.warning('Keyboard listener failed: $reason');
+          showHookError?.call(reason);
         }
         return;
       }
@@ -346,11 +352,5 @@ class KeyEventService {
     PreferencesState prefsState,
   ) {
     return prefsState.isOnDefaultLayer(keyboardState.layout);
-  }
-
-  /// Clears all active triggers
-  void clearActiveTriggers() {
-    _activeTriggers.clear();
-    _previousLayerStack.clear();
   }
 }

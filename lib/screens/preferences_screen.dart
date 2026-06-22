@@ -6,7 +6,7 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:overkeys/utils/theme_manager.dart';
@@ -38,6 +38,8 @@ class PreferencesScreen extends ConsumerStatefulWidget {
 class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
     with WindowListener {
   final StateService _stateService = StateService();
+  final FocusNode _keyboardFocusNode =
+      FocusNode(debugLabel: 'Preferences keyboard shortcuts');
   Timer? _saveDebounceTimer;
 
   // Constants
@@ -57,7 +59,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
     _loadAppVersion();
     // Load state after other setup is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadState();
+      unawaited(_showInitialWindow());
     });
   }
 
@@ -93,6 +95,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
       // Providers may already be disposed
     }
     windowManager.removeListener(this);
+    _keyboardFocusNode.dispose();
     super.dispose();
   }
 
@@ -117,7 +120,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
       }
 
       if (call.method == 'requestFocus') {
-        await windowManager.focus();
+        await _showAndFocusWindow();
       }
 
       if (call.method == 'receiveLog' && mounted) {
@@ -138,6 +141,20 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
     await _stateService.loadStatesIntoProviders(ref);
   }
 
+  Future<void> _showInitialWindow() async {
+    await _loadState();
+    if (!mounted) return;
+    await _showAndFocusWindow();
+  }
+
+  Future<void> _showAndFocusWindow() async {
+    if (!mounted) return;
+    await windowManager.show();
+    await widget.windowController.show();
+    await windowManager.focus();
+    _requestKeyboardFocus();
+  }
+
   Future<void> _saveState() async {
     await _stateService.saveAllStates(
       keyboard: ref.read(keyboardProvider),
@@ -151,6 +168,12 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
     _saveDebounceTimer = Timer(_saveDebounceDuration, () {
       _saveState();
     });
+  }
+
+  void _requestKeyboardFocus() {
+    if (mounted) {
+      _keyboardFocusNode.requestFocus();
+    }
   }
 
   void _updateMainWindow(dynamic method, dynamic value) async {
@@ -174,7 +197,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = ThemeManager.getTheme(_brightness);
-    final FocusNode keyboardFocusNode = FocusNode();
 
     // Listen to provider changes and auto-save (debounced)
     ref.listen<KeyboardState>(keyboardProvider, (previous, next) {
@@ -193,10 +215,6 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      keyboardFocusNode.requestFocus();
-    });
-
     return MaterialApp(
       theme: theme,
       localizationsDelegates: const [
@@ -209,7 +227,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen>
       ],
       home: Builder(builder: (context) {
         return KeyboardListener(
-          focusNode: keyboardFocusNode,
+          focusNode: _keyboardFocusNode,
+          autofocus: true,
           onKeyEvent: (KeyEvent keyEvent) async {
             if (keyEvent is KeyDownEvent &&
                 keyEvent.logicalKey == LogicalKeyboardKey.escape) {
